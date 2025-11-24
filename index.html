@@ -1,405 +1,662 @@
 ﻿<!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <title>PodTechs - Leads</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <style>
-      :root {
-        --accent: #3b82f6;
-        --border: #e5e7eb;
-        --text-main: #111827;
-        --text-muted: #6b7280;
-        --bg-main: #ffffff;
-        --bg-soft: #f3f4f6;
-        --radius-lg: 12px;
-      }
+<head>
+  <meta charset="UTF-8" />
+  <title>PodTechs Journey MVP</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <style>
+    :root {
+      --accent: #3b82f6;
+      --accent-soft: #e5f0ff;
+      --border: #e5e7eb;
+      --text-main: #111827;
+      --text-muted: #6b7280;
+      --bg-main: #ffffff;
+      --bg-soft: #f3f4f6;
+      --radius-lg: 12px;
+    }
 
-      * {
-        box-sizing: border-box;
-        margin: 0;
-        padding: 0;
-        font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
-          sans-serif;
-      }
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
 
-      body {
-        background: #f9fafb;
-        color: var(--text-main);
-      }
+    body {
+      background: var(--bg-main);
+      color: var(--text-main);
+    }
 
-      .app {
-        max-width: 1120px;
-        margin: 0 auto;
-        padding: 20px 16px 40px;
-      }
+    .layout {
+      display: grid;
+      grid-template-columns: 260px 1fr;
+      min-height: 100vh;
+    }
 
-      header {
-        display: flex;
-        flex-wrap: wrap;
-        justify-content: space-between;
-        align-items: flex-start;
-        gap: 10px;
-        margin-bottom: 18px;
-      }
+    /* Sidebar */
+    .sidebar {
+      border-right: 1px solid var(--border);
+      padding: 20px 18px;
+    }
 
-      .title {
-        font-size: 1.5rem;
-        font-weight: 700;
-      }
+    .logo {
+      font-weight: 700;
+      font-size: 1.1rem;
+      margin-bottom: 4px;
+    }
 
-      .title span {
-        color: var(--accent);
-      }
+    .logo span {
+      color: var(--accent);
+    }
 
-      .subtitle {
-        font-size: 0.9rem;
-        color: var(--text-muted);
-        margin-top: 4px;
-        max-width: 440px;
-      }
+    .subtitle {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      margin-bottom: 20px;
+    }
 
-      .badge {
-        border-radius: 999px;
-        border: 1px solid var(--border);
-        padding: 4px 10px;
-        font-size: 0.78rem;
-        color: var(--text-muted);
-        background: var(--bg-main);
-      }
+    .nav-section-label {
+      font-size: 0.75rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--text-muted);
+      margin: 18px 0 6px;
+    }
 
-      .cards-row {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-        gap: 10px;
-        margin-bottom: 18px;
-      }
+    .nav {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
 
-      .card {
-        background: var(--bg-main);
-        border-radius: var(--radius-lg);
-        border: 1px solid var(--border);
-        padding: 10px 12px;
-      }
+    .nav button {
+      border: none;
+      text-align: left;
+      padding: 8px 10px;
+      border-radius: 999px;
+      font-size: 0.9rem;
+      background: transparent;
+      cursor: pointer;
+      color: var(--text-muted);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
 
-      .card-label {
-        font-size: 0.8rem;
-        color: var(--text-muted);
-        margin-bottom: 4px;
-      }
+    .nav button span.icon {
+      font-size: 1rem;
+    }
 
-      .card-value {
-        font-size: 1.3rem;
-        font-weight: 600;
-      }
+    .nav button.active {
+      background: var(--accent-soft);
+      color: var(--accent);
+      font-weight: 600;
+    }
 
-      .card-foot {
-        margin-top: 4px;
-        font-size: 0.75rem;
-        color: var(--text-muted);
-      }
+    .nav button:hover:not(.active) {
+      background: var(--bg-soft);
+    }
 
-      .panel {
-        background: var(--bg-main);
-        border-radius: var(--radius-lg);
-        border: 1px solid var(--border);
-        padding: 12px 14px;
-        margin-bottom: 16px;
-      }
+    .sidebar-footer {
+      margin-top: 24px;
+      padding-top: 14px;
+      border-top: 1px dashed var(--border);
+      font-size: 0.78rem;
+      color: var(--text-muted);
+    }
 
-      .panel-header {
-        font-size: 0.95rem;
-        font-weight: 600;
-        margin-bottom: 6px;
-      }
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: var(--bg-soft);
+      border-radius: 999px;
+      padding: 2px 8px;
+      font-size: 0.75rem;
+      margin-top: 6px;
+    }
 
-      .panel-subtitle {
-        font-size: 0.8rem;
-        color: var(--text-muted);
-        margin-bottom: 10px;
-      }
+    /* Main */
+    .main {
+      padding: 20px 24px;
+    }
 
-      .form-row {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-        gap: 8px;
-        margin-bottom: 8px;
-      }
+    .main-header {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      margin-bottom: 18px;
+    }
 
-      .field {
+    .main-title {
+      font-size: 1.3rem;
+      font-weight: 600;
+    }
+
+    .main-subtitle {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      margin-top: 2px;
+    }
+
+    .view-badge {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      border-radius: 999px;
+      border: 1px solid var(--border);
+      padding: 4px 10px;
+    }
+
+    .cards-row {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+      gap: 12px;
+      margin-bottom: 18px;
+    }
+
+    .card {
+      background: var(--bg-main);
+      border-radius: var(--radius-lg);
+      border: 1px solid var(--border);
+      padding: 10px 12px;
+    }
+
+    .card-label {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      margin-bottom: 4px;
+    }
+
+    .card-value {
+      font-size: 1.2rem;
+      font-weight: 600;
+    }
+
+    .card-foot {
+      margin-top: 4px;
+      font-size: 0.75rem;
+      color: var(--text-muted);
+    }
+
+    .section { display: none; }
+    .section.active { display: block; }
+
+    .section-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+      margin: 14px 0 8px;
+    }
+
+    .section-header h2 {
+      font-size: 1rem;
+      font-weight: 600;
+    }
+
+    .section-header small {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+    }
+
+    .section-actions {
+      display: flex;
+      gap: 8px;
+    }
+
+    .btn {
+      border-radius: 999px;
+      border: 1px solid var(--border);
+      background: var(--bg-main);
+      font-size: 0.8rem;
+      padding: 5px 10px;
+      cursor: pointer;
+    }
+
+    .btn-primary {
+      border-color: var(--accent);
+      background: var(--accent);
+      color: white;
+    }
+
+    .btn-primary:hover { opacity: 0.95; }
+    .btn:hover { background: var(--bg-soft); }
+
+    .table-wrapper {
+      margin-top: 6px;
+      border-radius: var(--radius-lg);
+      border: 1px solid var(--border);
+      overflow: auto;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.8rem;
+      background: var(--bg-main);
+      min-width: 700px;
+    }
+
+    th, td {
+      padding: 8px 10px;
+      border-bottom: 1px solid var(--border);
+      text-align: left;
+      vertical-align: middle;
+    }
+
+    th {
+      background: var(--bg-soft);
+      font-weight: 600;
+      font-size: 0.78rem;
+      color: var(--text-muted);
+      white-space: nowrap;
+    }
+
+    tr:last-child td { border-bottom: none; }
+
+    .tag {
+      display: inline-flex;
+      padding: 2px 7px;
+      border-radius: 999px;
+      background: var(--bg-soft);
+      font-size: 0.7rem;
+      color: var(--text-muted);
+    }
+
+    .tag-green { background: #dcfce7; color: #166534; }
+    .tag-yellow { background: #fef9c3; color: #854d0e; }
+    .tag-red { background: #fee2e2; color: #991b1b; }
+
+    .input-inline {
+      width: 100%;
+      padding: 4px 6px;
+      font-size: 0.78rem;
+      border-radius: 6px;
+      border: 1px solid var(--border);
+      background: var(--bg-main);
+    }
+
+    .section-note {
+      font-size: 0.76rem;
+      color: var(--text-muted);
+      margin-top: 6px;
+    }
+
+    #status { margin-top: 8px; font-size: 0.8rem; color: var(--text-muted); }
+    #status.error { color: #991b1b; }
+
+    @media (max-width: 840px) {
+      .layout { grid-template-columns: 1fr; }
+      .sidebar {
+        border-right: none;
+        border-bottom: 1px solid var(--border);
         display: flex;
         flex-direction: column;
-        gap: 4px;
-        font-size: 0.8rem;
+        gap: 6px;
       }
+    }
+  </style>
+</head>
+<body>
+  <div class="layout">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+      <div>
+        <div class="logo">PodTechs <span>Journey</span></div>
+        <div class="subtitle">MVP · Acquisition & Renewal Tracker</div>
+      </div>
 
-      .field label {
-        color: var(--text-muted);
-      }
+      <div class="nav-section-label">Overview</div>
+      <div class="nav">
+        <button class="nav-btn active" data-target="dashboard">
+          <span class="icon">📊</span> Dashboard
+        </button>
+      </div>
 
-      .input,
-      .select {
-        padding: 6px 8px;
-        border-radius: 8px;
-        border: 1px solid var(--border);
-        font-size: 0.82rem;
-        background: var(--bg-main);
-      }
+      <div class="nav-section-label">Pipeline</div>
+      <div class="nav">
+        <button class="nav-btn" data-target="leads">
+          <span class="icon">🧲</span> Leads
+        </button>
+        <button class="nav-btn" data-target="acquisition">
+          <span class="icon">📞</span> Acquisition
+        </button>
+        <button class="nav-btn" data-target="clients">
+          <span class="icon">🎙️</span> Clients
+        </button>
+        <button class="nav-btn" data-target="renewals">
+          <span class="icon">♻️</span> Renewals
+        </button>
+      </div>
 
-      .btn {
-        border-radius: 999px;
-        border: 1px solid var(--border);
-        background: var(--bg-main);
-        font-size: 0.82rem;
-        padding: 6px 12px;
-        cursor: pointer;
-      }
+      <div class="sidebar-footer">
+        This is an MVP.  
+        <div class="pill">
+          <span>🧪</span> Manual tracking first
+        </div>
+      </div>
+    </aside>
 
-      .btn-primary {
-        border-color: var(--accent);
-        background: var(--accent);
-        color: #ffffff;
-        font-weight: 500;
-      }
-
-      .btn-primary:hover {
-        opacity: 0.95;
-      }
-
-      .table-wrapper {
-        border-radius: var(--radius-lg);
-        border: 1px solid var(--border);
-        overflow: auto;
-        background: var(--bg-main);
-      }
-
-      table {
-        width: 100%;
-        border-collapse: collapse;
-        font-size: 0.8rem;
-        min-width: 780px;
-      }
-
-      th,
-      td {
-        padding: 8px 10px;
-        border-bottom: 1px solid var(--border);
-        text-align: left;
-        vertical-align: middle;
-      }
-
-      th {
-        background: var(--bg-soft);
-        font-weight: 600;
-        font-size: 0.78rem;
-        color: var(--text-muted);
-        white-space: nowrap;
-      }
-
-      tr:last-child td {
-        border-bottom: none;
-      }
-
-      .tag {
-        display: inline-flex;
-        padding: 2px 7px;
-        border-radius: 999px;
-        font-size: 0.7rem;
-        background: var(--bg-soft);
-        color: var(--text-muted);
-      }
-
-      .tag-high {
-        background: #fee2e2;
-        color: #991b1b;
-      }
-
-      .tag-medium {
-        background: #fef9c3;
-        color: #854d0e;
-      }
-
-      .tag-low {
-        background: #e5e7eb;
-        color: #374151;
-      }
-
-      .input-inline {
-        width: 100%;
-        padding: 4px 6px;
-        font-size: 0.78rem;
-        border-radius: 6px;
-        border: 1px solid var(--border);
-        background: var(--bg-main);
-      }
-
-      .note {
-        font-size: 0.76rem;
-        color: var(--text-muted);
-        margin-top: 6px;
-      }
-
-      .status {
-        margin-top: 8px;
-        font-size: 0.8rem;
-        color: var(--text-muted);
-      }
-
-      .status.error {
-        color: #991b1b;
-      }
-
-      @media (max-width: 640px) {
-        header {
-          align-items: flex-start;
-        }
-      }
-    </style>
-  </head>
-  <body>
-    <div class="app">
-      <header>
+    <!-- Main -->
+    <main class="main">
+      <header class="main-header">
         <div>
-          <div class="title">PodTechs <span>Leads</span></div>
-          <div class="subtitle">
-            MVP focused on Leads. Add, view, and prioritize. Data stored in Supabase.
+          <div class="main-title">Journey System – Internal View</div>
+          <div class="main-subtitle">
+            Track lead → acquisition → client → renewal in one simple place.
           </div>
         </div>
-        <div class="badge">Internal - local + Supabase</div>
+        <div class="view-badge">Internal · For PodTechs team only</div>
       </header>
 
+      <!-- Quick metrics -->
       <section class="cards-row">
         <article class="card">
-          <div class="card-label">Total leads</div>
-          <div class="card-value" id="count-total">0</div>
-          <div class="card-foot">Records in Supabase</div>
+          <div class="card-label">Leads (this month)</div>
+          <div class="card-value" id="metric-leads">0</div>
+          <div class="card-foot">Synced from Supabase</div>
         </article>
         <article class="card">
-          <div class="card-label">High priority</div>
-          <div class="card-value" id="count-high">0</div>
-          <div class="card-foot">Top to act on</div>
+          <div class="card-label">In acquisition</div>
+          <div class="card-value">9</div>
+          <div class="card-foot">Actively in conversations</div>
         </article>
         <article class="card">
-          <div class="card-label">Last lead</div>
-          <div class="card-value" id="last-lead">-</div>
-          <div class="card-foot">Most recent name</div>
+          <div class="card-label">Active clients</div>
+          <div class="card-value">5</div>
+          <div class="card-foot">With ongoing production</div>
+        </article>
+        <article class="card">
+          <div class="card-label">Renewals in next 60 days</div>
+          <div class="card-value">2</div>
+          <div class="card-foot">Needs Dustin’s attention</div>
         </article>
       </section>
 
-      <section class="panel">
-        <div class="panel-header">Add lead</div>
-        <div class="panel-subtitle">
-          Manual first: fill key fields, save to Supabase.
+      <!-- DASHBOARD -->
+      <section id="dashboard" class="section active">
+        <div class="section-header">
+          <h2>Pipeline overview</h2>
+          <small>High-level snapshot of where everyone is in the journey.</small>
         </div>
-        <form id="lead-form">
-          <div class="form-row">
-            <div class="field">
-              <label for="company">Project / Company</label>
-              <input
-                class="input"
-                id="company"
-                name="company"
-                placeholder="e.g. North Bay Home Expo Podcast"
-                required
-              />
-            </div>
-            <div class="field">
-              <label for="contact">Main contact</label>
-              <input
-                class="input"
-                id="contact"
-                name="contact"
-                placeholder="e.g. Jane Doe"
-              />
-            </div>
-            <div class="field">
-              <label for="contactInfo">Email / WhatsApp</label>
-              <input
-                class="input"
-                id="contactInfo"
-                name="contactInfo"
-                placeholder="e.g. jane@example.com / +55 11 99999-9999"
-              />
-            </div>
-          </div>
 
-          <div class="form-row">
-            <div class="field">
-              <label for="source">Channel</label>
-              <input
-                class="input"
-                id="source"
-                name="source"
-                placeholder="Twine, LinkedIn, referral..."
-              />
-            </div>
-            <div class="field">
-              <label for="priority">Priority</label>
-              <select class="select" id="priority" name="priority">
-                <option value="high">High</option>
-                <option value="medium">Medium</option>
-                <option value="low">Low</option>
-              </select>
-            </div>
-            <div class="field">
-              <label for="lastTouch">Last touch</label>
-              <input
-                class="input"
-                id="lastTouch"
-                name="lastTouch"
-                placeholder="e.g. yesterday, 3 days ago, not contacted"
-              />
-            </div>
-          </div>
-
-          <div class="form-row">
-            <div class="field">
-              <label for="nextStep">Next step</label>
-              <input
-                class="input"
-                id="nextStep"
-                name="nextStep"
-                placeholder="e.g. book intro call"
-              />
-            </div>
-          </div>
-
-          <button type="submit" class="btn btn-primary">+ Add lead</button>
-          <div id="status" class="status"></div>
-        </form>
-        <p class="note">
-          Data is stored in Supabase. Make sure <code>config.js</code> has your project URL and anon key.
-        </p>
-      </section>
-
-      <section>
-        <div class="panel-header">Leads</div>
-        <div class="panel-subtitle">
-          See channel, priority, last touch, and next step in one view.
-        </div>
         <div class="table-wrapper">
           <table>
             <thead>
               <tr>
+                <th>Client / Lead</th>
+                <th>Stage</th>
+                <th>Channel</th>
+                <th>Last touch</th>
+                <th>Next action</th>
+                <th>Owner</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>North Bay Home Expo Podcast</td>
+                <td><span class="tag tag-green">Client</span></td>
+                <td>Email · Zoom</td>
+                <td>3 days ago</td>
+                <td>Prepare Q1 renewal proposal</td>
+                <td>Dustin</td>
+              </tr>
+              <tr>
+                <td>Hyperion LA – Shorts Production</td>
+                <td><span class="tag tag-yellow">Acquisition</span></td>
+                <td>Twine</td>
+                <td>Today</td>
+                <td>Send follow-up with case studies</td>
+                <td>Rodrigo</td>
+              </tr>
+              <tr>
+                <td>Baycrest & Defy Dementia</td>
+                <td><span class="tag tag-green">Client</span></td>
+                <td>Referral</td>
+                <td>5 days ago</td>
+                <td>Confirm next recording date</td>
+                <td>Dustin</td>
+              </tr>
+              <tr>
+                <td>“Future of Retail Audio” Show</td>
+                <td><span class="tag">Lead</span></td>
+                <td>LinkedIn</td>
+                <td>Not contacted yet</td>
+                <td>Decide priority</td>
+                <td>Rodrigo</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <p class="section-note">
+          Later you can plug real data here from your database; for now it’s a manual snapshot Dustin can glance at.
+        </p>
+      </section>
+
+      <!-- LEADS -->
+      <section id="leads" class="section">
+        <div class="section-header">
+          <div>
+            <h2>Leads</h2>
+            <small>Raw leads before they respond – your “top of funnel”.</small>
+          </div>
+          <div class="section-actions">
+            <button class="btn">Import CSV</button>
+            <button class="btn btn-primary" id="btn-add-lead">+ Add lead</button>
+          </div>
+        </div>
+
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th>Source</th>
                 <th>Project / Company</th>
                 <th>Contact</th>
-                <th>Channel</th>
+                <th>Service interest</th>
                 <th>Priority</th>
                 <th>Last touch</th>
                 <th>Next step</th>
-                <th>Created at</th>
+                <th>Add to outreach</th>
               </tr>
             </thead>
-            <tbody id="lead-body"></tbody>
+            <tbody id="leads-body"></tbody>
           </table>
         </div>
-        <p class="note">
-          Editing inline updates Supabase immediately.
+        <p class="section-note">
+          In the real version, checking “Add to outreach” would trigger automation and move them into Acquisition when they reply.
+        </p>
+        <div id="status"></div>
+      </section>
+
+      <!-- ACQUISITION -->
+      <section id="acquisition" class="section">
+        <div class="section-header">
+          <div>
+            <h2>Acquisition</h2>
+            <small>Leads who replied and are in active conversation.</small>
+          </div>
+          <div class="section-actions">
+            <button class="btn">View only high priority</button>
+          </div>
+        </div>
+
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th>Client / Project</th>
+                <th>Stage</th>
+                <th>Channel</th>
+                <th>Last contact</th>
+                <th>Next action</th>
+                <th>Meeting date</th>
+                <th>Move to client</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>Hyperion LA – Shorts</td>
+                <td><span class="tag tag-yellow">Proposal sent</span></td>
+                <td>Email</td>
+                <td>Today</td>
+                <td>
+                  <input class="input-inline" placeholder="Follow up in 3 days with examples" />
+                </td>
+                <td>—</td>
+                <td><input type="checkbox" /></td>
+              </tr>
+              <tr>
+                <td>North Bay Home Expo Podcast</td>
+                <td><span class="tag tag-green">Verbal yes</span></td>
+                <td>Zoom</td>
+                <td>2 days ago</td>
+                <td>
+                  <input class="input-inline" placeholder="Send contract & onboarding form" />
+                </td>
+                <td>Jan 12</td>
+                <td><input type="checkbox" /></td>
+              </tr>
+              <tr>
+                <td>Local Government Policy Podcast</td>
+                <td><span class="tag">Discovery call</span></td>
+                <td>LinkedIn DM</td>
+                <td>5 days ago</td>
+                <td>
+                  <input class="input-inline" placeholder="Confirm scope & budget range" />
+                </td>
+                <td>Jan 20</td>
+                <td><input type="checkbox" /></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <p class="section-note">
+          Once a box in “Move to client” is checked, they would become an active client in the real system.
         </p>
       </section>
-    </div>
 
-    <script type="module" src="./main.js"></script>
-  </body>
+      <!-- CLIENTS -->
+      <section id="clients" class="section">
+        <div class="section-header">
+          <div>
+            <h2>Clients</h2>
+            <small>Active paying clients with ongoing production.</small>
+          </div>
+          <div class="section-actions">
+            <button class="btn">Export for Dustin</button>
+          </div>
+        </div>
+
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th>Client</th>
+                <th>Start date</th>
+                <th>Services</th>
+                <th>Cadence</th>
+                <th>Account owner</th>
+                <th>Health</th>
+                <th>Notes</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>North Bay Home Expo Podcast</td>
+                <td>Oct 2025</td>
+                <td>Full production · Clips</td>
+                <td>Weekly</td>
+                <td>Dustin</td>
+                <td><span class="tag tag-green">Healthy</span></td>
+                <td>Happy with trailer; track first 10 episodes.</td>
+              </tr>
+              <tr>
+                <td>Baycrest & Defy Dementia</td>
+                <td>Sep 2025</td>
+                <td>Production · Localization</td>
+                <td>Bi-weekly</td>
+                <td>Dustin</td>
+                <td><span class="tag tag-green">Healthy</span></td>
+                <td>Potential candidate for more languages.</td>
+              </tr>
+              <tr>
+                <td>Startup Growth Stories</td>
+                <td>Nov 2025</td>
+                <td>Launch-only package</td>
+                <td>Season-based</td>
+                <td>Rodrigo</td>
+                <td><span class="tag tag-yellow">Watch</span></td>
+                <td>Slow asset delivery; monitor satisfaction.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <p class="section-note">
+          This is where you and Dustin can quickly see “who matters now” and decide where to invest time.
+        </p>
+      </section>
+
+      <!-- RENEWALS -->
+      <section id="renewals" class="section">
+        <div class="section-header">
+          <div>
+            <h2>Renewals</h2>
+            <small>Clients approaching the end of their contract.</small>
+          </div>
+          <div class="section-actions">
+            <button class="btn">Show next 30 days</button>
+            <button class="btn btn-primary">Schedule renewal calls</button>
+          </div>
+        </div>
+
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th>Client</th>
+                <th>Renewal date</th>
+                <th>Contract value</th>
+                <th>Renewal probability</th>
+                <th>Last check-in</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>North Bay Home Expo Podcast</td>
+                <td>Feb 15, 2026</td>
+                <td>$12,000 / year</td>
+                <td><span class="tag tag-green">High (9/10)</span></td>
+                <td>Last week</td>
+                <td>
+                  <input class="input-inline" placeholder="Prepare upsell to video shorts" />
+                </td>
+              </tr>
+              <tr>
+                <td>Startup Growth Stories</td>
+                <td>Jan 30, 2026</td>
+                <td>$4,000 / season</td>
+                <td><span class="tag tag-yellow">Medium (6/10)</span></td>
+                <td>3 weeks ago</td>
+                <td>
+                  <input class="input-inline" placeholder="Review issues; send satisfaction check" />
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <p class="section-note">
+          Later this section can be powered by dates from your database and send automatic reminders to Slack or email.
+        </p>
+      </section>
+    </main>
+  </div>
+
+  <script type="module" src="./main.js"></script>
+</body>
 </html>
-
