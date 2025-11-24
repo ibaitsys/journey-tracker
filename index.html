@@ -85,9 +85,7 @@
       gap: 8px;
     }
 
-    .nav button span.icon {
-      font-size: 1rem;
-    }
+    .nav button span.icon { font-size: 1rem; }
 
     .nav button.active {
       background: var(--accent-soft);
@@ -95,9 +93,7 @@
       font-weight: 600;
     }
 
-    .nav button:hover:not(.active) {
-      background: var(--bg-soft);
-    }
+    .nav button:hover:not(.active) { background: var(--bg-soft); }
 
     .sidebar-footer {
       margin-top: 24px;
@@ -119,9 +115,7 @@
     }
 
     /* Main */
-    .main {
-      padding: 20px 24px;
-    }
+    .main { padding: 20px 24px; }
 
     .main-header {
       display: flex;
@@ -132,16 +126,8 @@
       margin-bottom: 18px;
     }
 
-    .main-title {
-      font-size: 1.3rem;
-      font-weight: 600;
-    }
-
-    .main-subtitle {
-      font-size: 0.85rem;
-      color: var(--text-muted);
-      margin-top: 2px;
-    }
+    .main-title { font-size: 1.3rem; font-weight: 600; }
+    .main-subtitle { font-size: 0.85rem; color: var(--text-muted); margin-top: 2px; }
 
     .view-badge {
       font-size: 0.75rem;
@@ -165,22 +151,9 @@
       padding: 10px 12px;
     }
 
-    .card-label {
-      font-size: 0.8rem;
-      color: var(--text-muted);
-      margin-bottom: 4px;
-    }
-
-    .card-value {
-      font-size: 1.2rem;
-      font-weight: 600;
-    }
-
-    .card-foot {
-      margin-top: 4px;
-      font-size: 0.75rem;
-      color: var(--text-muted);
-    }
+    .card-label { font-size: 0.8rem; color: var(--text-muted); margin-bottom: 4px; }
+    .card-value { font-size: 1.2rem; font-weight: 600; }
+    .card-foot { margin-top: 4px; font-size: 0.75rem; color: var(--text-muted); }
 
     .section { display: none; }
     .section.active { display: block; }
@@ -193,20 +166,10 @@
       margin: 14px 0 8px;
     }
 
-    .section-header h2 {
-      font-size: 1rem;
-      font-weight: 600;
-    }
+    .section-header h2 { font-size: 1rem; font-weight: 600; }
+    .section-header small { font-size: 0.8rem; color: var(--text-muted); }
 
-    .section-header small {
-      font-size: 0.8rem;
-      color: var(--text-muted);
-    }
-
-    .section-actions {
-      display: flex;
-      gap: 8px;
-    }
+    .section-actions { display: flex; gap: 8px; }
 
     .btn {
       border-radius: 999px;
@@ -217,12 +180,7 @@
       cursor: pointer;
     }
 
-    .btn-primary {
-      border-color: var(--accent);
-      background: var(--accent);
-      color: white;
-    }
-
+    .btn-primary { border-color: var(--accent); background: var(--accent); color: white; }
     .btn-primary:hover { opacity: 0.95; }
     .btn:hover { background: var(--bg-soft); }
 
@@ -280,14 +238,64 @@
       background: var(--bg-main);
     }
 
-    .section-note {
-      font-size: 0.76rem;
-      color: var(--text-muted);
-      margin-top: 6px;
-    }
+    .section-note { font-size: 0.76rem; color: var(--text-muted); margin-top: 6px; }
 
     #status { margin-top: 8px; font-size: 0.8rem; color: var(--text-muted); }
     #status.error { color: #991b1b; }
+
+    /* Modal */
+    .modal-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.35);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+      z-index: 1000;
+    }
+
+    .modal-backdrop.open { display: flex; }
+
+    .modal {
+      background: var(--bg-main);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.12);
+      max-width: 520px;
+      width: 100%;
+      padding: 14px 16px 16px;
+    }
+
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 10px;
+    }
+
+    .modal-title { font-size: 1rem; font-weight: 600; }
+
+    .modal-close {
+      border: none;
+      background: transparent;
+      font-size: 1.2rem;
+      cursor: pointer;
+      color: var(--text-muted);
+    }
+
+    .form-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 8px;
+      margin-bottom: 10px;
+    }
+
+    .field { display: flex; flex-direction: column; gap: 4px; font-size: 0.82rem; }
+    .field label { color: var(--text-muted); }
+    .input, .select { padding: 7px 8px; border-radius: 8px; border: 1px solid var(--border); }
+
+    .modal-actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 6px; }
 
     @media (max-width: 840px) {
       .layout { grid-template-columns: 1fr; }
@@ -657,18 +665,72 @@
     </main>
   </div>
 
+  <!-- Modal Add Lead -->
+  <div class="modal-backdrop" id="lead-modal">
+    <div class="modal">
+      <div class="modal-header">
+        <div class="modal-title">Add lead</div>
+        <button class="modal-close" id="lead-modal-close" aria-label="Close">×</button>
+      </div>
+      <form id="lead-form-modal">
+        <div class="form-grid">
+          <div class="field">
+            <label for="lead-company">Project / Company</label>
+            <input class="input" id="lead-company" name="company" required placeholder="e.g. North Bay Home Expo" />
+          </div>
+          <div class="field">
+            <label for="lead-contact">Contact</label>
+            <input class="input" id="lead-contact" name="contact" placeholder="Name" />
+          </div>
+          <div class="field">
+            <label for="lead-contact-info">Email / WhatsApp</label>
+            <input class="input" id="lead-contact-info" name="contactInfo" placeholder="email or phone" />
+          </div>
+        </div>
+        <div class="form-grid">
+          <div class="field">
+            <label for="lead-source">Channel</label>
+            <input class="input" id="lead-source" name="source" placeholder="Twine, LinkedIn, referral" />
+          </div>
+          <div class="field">
+            <label for="lead-priority">Priority</label>
+            <select class="select" id="lead-priority" name="priority">
+              <option value="high">High</option>
+              <option value="medium">Medium</option>
+              <option value="low">Low</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="lead-last-touch">Last touch</label>
+            <input class="input" id="lead-last-touch" name="lastTouch" placeholder="e.g. yesterday" />
+          </div>
+        </div>
+        <div class="form-grid">
+          <div class="field">
+            <label for="lead-next-step">Next step</label>
+            <input class="input" id="lead-next-step" name="nextStep" placeholder="e.g. book intro call" />
+          </div>
+        </div>
+        <div class="modal-actions">
+          <button type="button" class="btn" id="lead-modal-cancel">Cancel</button>
+          <button type="submit" class="btn btn-primary">Save lead</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
   <script type="module" src="./main.js"></script>
   <script>
-    document.addEventListener('"'"'DOMContentLoaded'"'"', () => {
+    document.addEventListener('DOMContentLoaded', () => {
       const navButtons = document.querySelectorAll('.nav-btn');
       const sections = document.querySelectorAll('.section');
       navButtons.forEach((btn) => {
-        btn.addEventListener('"'"'click'"'"', () => {
-          const target = btn.getAttribute('"'"'data-target'"'"');
-          navButtons.forEach((b) => b.classList.remove('"'"'active'"'"'));
-          btn.classList.add('"'"'active'"'"');
+        btn.addEventListener('click', () => {
+          const target = btn.getAttribute('data-target');
+          navButtons.forEach((b) => b.classList.remove('active'));
+          btn.classList.add('active');
           sections.forEach((section) => {
-            section.classList.toggle('"'"'active'"'"', section.id === target);
+            section.classList.toggle('active', section.id === target);
           });
         });
       });
@@ -676,4 +738,3 @@
   </script>
 </body>
 </html>
-

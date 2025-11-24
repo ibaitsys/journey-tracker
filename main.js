@@ -10,6 +10,11 @@ const statusEl = document.getElementById("status");
 const metricLeads = document.getElementById("metric-leads");
 const addLeadBtn = document.getElementById("btn-add-lead");
 
+const modal = document.getElementById("lead-modal");
+const modalForm = document.getElementById("lead-form-modal");
+const modalClose = document.getElementById("lead-modal-close");
+const modalCancel = document.getElementById("lead-modal-cancel");
+
 function setStatus(message, isError = false) {
   if (!statusEl) return;
   statusEl.textContent = message;
@@ -126,20 +131,31 @@ async function loadLeads() {
   return data || [];
 }
 
-async function handleAddLead() {
-  const company = prompt("Project / Company?");
+function openModal() {
+  modal?.classList.add("open");
+  modalForm?.reset();
+  const prioritySelect = document.getElementById("lead-priority");
+  if (prioritySelect) prioritySelect.value = "high";
+}
+
+function closeModal() {
+  modal?.classList.remove("open");
+}
+
+async function handleModalSubmit(event) {
+  event.preventDefault();
+  const formData = new FormData(modalForm);
+  const company = formData.get("company")?.toString().trim();
   if (!company) return;
-  const contact = prompt("Contact name (optional)") || null;
-  const contactInfo = prompt("Email / WhatsApp (optional)") || null;
-  const source = prompt("Channel (Twine, LinkedIn...)") || null;
-  const priority = (prompt("Priority (high/medium/low)") || "high").toLowerCase();
 
   const payload = {
-    company: company.trim(),
-    contact: contact?.trim() || null,
-    contact_info: contactInfo?.trim() || null,
-    source: source?.trim() || null,
-    priority: ["high", "medium", "low"].includes(priority) ? priority : "high",
+    company,
+    contact: formData.get("contact")?.toString().trim() || null,
+    contact_info: formData.get("contactInfo")?.toString().trim() || null,
+    source: formData.get("source")?.toString().trim() || null,
+    priority: formData.get("priority")?.toString() || "high",
+    last_touch: formData.get("lastTouch")?.toString().trim() || null,
+    next_step: formData.get("nextStep")?.toString().trim() || null,
   };
 
   setStatus("Saving lead...");
@@ -150,6 +166,7 @@ async function handleAddLead() {
     return;
   }
   setStatus("Saved!");
+  closeModal();
   const leads = await loadLeads();
   renderLeads(leads);
 }
@@ -159,7 +176,14 @@ async function init() {
     setStatus("Missing Supabase config", true);
     return;
   }
-  addLeadBtn?.addEventListener("click", handleAddLead);
+  addLeadBtn?.addEventListener("click", openModal);
+  modalClose?.addEventListener("click", closeModal);
+  modalCancel?.addEventListener("click", closeModal);
+  modal?.addEventListener("click", (e) => {
+    if (e.target === modal) closeModal();
+  });
+  modalForm?.addEventListener("submit", handleModalSubmit);
+
   const leads = await loadLeads();
   renderLeads(leads);
 }
