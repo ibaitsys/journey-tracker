@@ -803,6 +803,7 @@
     const leadHistoryBox = document.getElementById("lead-history");
     const idsMatch = (a, b) => String(a) === String(b);
     const isSupabaseId = (id) => typeof id === "string";
+    const STORAGE_KEY = "podtechs_journey_state_v1";
     let editingLeadId = null;
 
     async function fetchSupabaseLeads() {
@@ -870,10 +871,45 @@
 
     async function syncSupabaseLeads() {
       const leads = await fetchSupabaseLeads();
-      const leadIds = new Set(leads.map(l => l.id));
-      const nonLeads = state.records.filter(r => r.stage !== "lead" && !leadIds.has(r.id));
-      state.records = [...leads, ...nonLeads];
+      const byId = new Map(state.records.map(r => [String(r.id), r]));
+      const merged = [];
+      for (const lead of leads) {
+        const key = String(lead.id);
+        const existing = byId.get(key);
+        if (existing && existing.stage !== "lead") {
+          merged.push(existing);
+        } else {
+          merged.push(lead);
+        }
+        byId.delete(key);
+      }
+      for (const value of byId.values()) {
+        merged.push(value);
+      }
+      state.records = merged;
+      saveState();
       renderAll();
+    }
+
+    function saveState() {
+      try {
+        window.localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+      } catch (err) {
+        console.error("Could not save state", err);
+      }
+    }
+
+    function loadState() {
+      try {
+        const raw = window.localStorage.getItem(STORAGE_KEY);
+        if (!raw) return;
+        const parsed = JSON.parse(raw);
+        if (parsed && Array.isArray(parsed.records)) {
+          state.records = parsed.records;
+        }
+      } catch (err) {
+        console.error("Could not load state", err);
+      }
     }
 
     function renderHistory(record) {
@@ -1409,6 +1445,7 @@
       renderRetention();
       renderRejected();
       renderRenewals();
+      saveState();
     }
 
     ensureNav();
@@ -1417,11 +1454,16 @@
     handleClientActions();
     handleRenewalsActions();
     handleRejectedEvents();
+    loadState();
     renderAll();
     syncSupabaseLeads();
   </script>
 </body>
 </html>
+
+
+
+
 
 
 
