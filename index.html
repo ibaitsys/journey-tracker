@@ -1078,7 +1078,6 @@
           <td>${lead.nextStep || "Set first touch"}</td>
           <td>
             <div class="section-actions">
-              <button class="btn btn-primary" data-action="lead-promote" data-id="${lead.id}">Promote</button>
               <button class="btn" data-action="lead-reject" data-id="${lead.id}">Reject</button>
               <button class="btn" data-action="view-lead" data-id="${lead.id}">View / Edit</button>
             </div>
@@ -1277,10 +1276,7 @@
           moveLeadToRejected(id);
           renderAll();
         }
-        if (target.dataset.action === "lead-promote") {
-          moveLeadToAcquisition(id);
-          renderAll();
-        }
+        
         if (target.dataset.action === "view-lead") {
           const record = state.records.find(r => idsMatch(r.id, id));
           if (record) openLeadModal(record);
@@ -1463,6 +1459,8 @@
   </script>
 </body>
 </html>
+
+
 
 
 
