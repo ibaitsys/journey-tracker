@@ -895,9 +895,6 @@
         console.error("Supabase delete failed", err);
       }
     }
-);
-      return { ...record, history };
-    }
 
     function openLeadModal(record) {
       leadForm.reset();
@@ -1158,29 +1155,25 @@
     async function promoteLeadToAcquisition(id) {
       const record = state.records.find(r => idsMatch(r.id, id) && r.stage === "lead");
       if (!record) return;
-      const updated = appendLog({ ...record, stage: "acquisition", substage: "FIRST CONTACT", nextAction: "Book first meeting", lastTouch: "Today" }, "Stage changed lead -> acquisition");
+      const updated = appendLog(
+        { ...record, stage: "acquisition", substage: "FIRST CONTACT", nextAction: "Book first meeting", lastTouch: "Today" },
+        "Stage changed lead -> acquisition"
+      );
       if (isSupabaseId(id)) await removeSupabaseLead(id);
       state.records = [updated, ...state.records.filter(r => !idsMatch(r.id, id))];
       renderAll();
-    }
-, "Stage changed lead -> acquisition");
-        }
-        return record;
-      });
     }
 
     async function moveLeadToRejected(id) {
       const record = state.records.find(r => idsMatch(r.id, id) && r.stage === "lead");
       if (!record) return;
-      const updated = appendLog({ ...record, stage: "rejected", substage: null, nextAction: record.nextStep || record.nextAction || "Rejected" }, "Stage changed lead -> rejected");
+      const updated = appendLog(
+        { ...record, stage: "rejected", substage: null, nextAction: record.nextStep || record.nextAction || "Rejected" },
+        "Stage changed lead -> rejected"
+      );
       if (isSupabaseId(id)) await removeSupabaseLead(id);
       state.records = [updated, ...state.records.filter(r => !idsMatch(r.id, id))];
       renderAll();
-    }
-, "Stage changed lead -> rejected");
-        }
-        return record;
-      });
     }
 
     function setSubstage(id, stage) {
@@ -1425,6 +1418,9 @@
   </script>
 </body>
 </html>
+
+
+
 
 
 
