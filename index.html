@@ -1,1373 +1,405 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>PodTechs Journey MVP</title>
-  <style>
-    :root {
-      --accent: #D43D52;
-      --accent-soft: #f7d9df;
-      --border: #e5e7eb;
-      --text-main: #111827;
-      --text-muted: #6b7280;
-      --bg-main: #ffffff;
-      --bg-soft: #f3f4f6;
-      --radius-lg: 12px;
-    }
-
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-    }
-
-    body {
-      background: var(--bg-main);
-      color: var(--text-main);
-    }
-
-    .layout {
-      display: grid;
-      grid-template-columns: 260px 1fr;
-      min-height: 100vh;
-    }
-
-    /* Sidebar */
-    .sidebar {
-      border-right: 1px solid var(--border);
-      padding: 20px 18px;
-    }
-
-    .logo-row {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      margin-bottom: 12px;
-    }
-
-    .logo-mark {
-      width: 32px;
-      height: 32px;
-      flex-shrink: 0;
-      object-fit: contain;
-      display: block;
-    }
-
-    .logo {
-      font-weight: 700;
-      font-size: 1.1rem;
-      margin-bottom: 4px;
-    }
-
-    .logo span {
-      color: var(--accent);
-    }
-
-    .subtitle {
-      font-size: 0.8rem;
-      color: var(--text-muted);
-      margin-bottom: 20px;
-    }
-
-    .nav-section-label {
-      font-size: 0.75rem;
-      font-weight: 600;
-      text-transform: uppercase;
-      letter-spacing: 0.05em;
-      color: var(--text-muted);
-      margin: 18px 0 6px;
-    }
-
-    .nav {
-      display: flex;
-      flex-direction: column;
-      gap: 4px;
-    }
-
-    .nav button {
-      border: none;
-      text-align: left;
-      padding: 8px 10px;
-      border-radius: 999px;
-      font-size: 0.9rem;
-      background: transparent;
-      cursor: pointer;
-      color: var(--text-muted);
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-
-    .nav button .icon {
-      font-weight: 700;
-      font-size: 0.9rem;
-    }
-
-    .nav button.active {
-      background: var(--accent-soft);
-      color: var(--accent);
-      font-weight: 600;
-    }
-
-    .nav button:hover:not(.active) {
-      background: var(--bg-soft);
-    }
-
-    .sidebar-footer {
-      margin-top: 24px;
-      padding-top: 14px;
-      border-top: 1px dashed var(--border);
-      font-size: 0.78rem;
-      color: var(--text-muted);
-    }
-
-    .pill {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      background: var(--bg-soft);
-      border-radius: 999px;
-      padding: 2px 8px;
-      font-size: 0.75rem;
-      margin-top: 6px;
-    }
-
-    /* Main */
-    .main {
-      padding: 20px 24px;
-    }
-
-    .main-header {
-      display: flex;
-      flex-wrap: wrap;
-      align-items: center;
-      justify-content: space-between;
-      gap: 10px;
-      margin-bottom: 18px;
-    }
-
-    .main-title {
-      font-size: 1.3rem;
-      font-weight: 600;
-    }
-
-    .main-subtitle {
-      font-size: 0.85rem;
-      color: var(--text-muted);
-      margin-top: 2px;
-    }
-
-    .view-badge {
-      font-size: 0.75rem;
-      color: var(--text-muted);
-      border-radius: 999px;
-      border: 1px solid var(--border);
-      padding: 4px 10px;
-    }
-
-    .cards-row {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
-      gap: 12px;
-      margin-bottom: 18px;
-    }
-
-    .card {
-      background: var(--bg-main);
-      border-radius: var(--radius-lg);
-      border: 1px solid var(--border);
-      padding: 10px 12px;
-    }
-
-    .card-label {
-      font-size: 0.8rem;
-      color: var(--text-muted);
-      margin-bottom: 4px;
-    }
-
-    .card-value {
-      font-size: 1.2rem;
-      font-weight: 600;
-    }
-
-    .card-foot {
-      margin-top: 4px;
-      font-size: 0.75rem;
-      color: var(--text-muted);
-    }
-    /* Tables / sections */
-    .section {
-      display: none;
-    }
-
-    .section.active {
-      display: block;
-    }
-
-    .section-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      gap: 10px;
-      margin: 14px 0 8px;
-    }
-
-    .section-header h2 {
-      font-size: 1rem;
-      font-weight: 600;
-    }
-
-    .section-header small {
-      font-size: 0.8rem;
-      color: var(--text-muted);
-    }
-
-    .section-actions {
-      display: flex;
-      gap: 8px;
-    }
-
-    .btn {
-      border-radius: 999px;
-      border: 1px solid var(--border);
-      background: var(--bg-main);
-      font-size: 0.8rem;
-      padding: 5px 10px;
-      cursor: pointer;
-    }
-
-    .btn-primary {
-      border-color: #111827;
-      background: #111827;
-      color: white;
-    }
-
-    .btn-primary:hover {
-      opacity: 0.9;
-    }
-
-    .btn:hover {
-      background: var(--bg-soft);
-    }
-
-    .table-wrapper {
-      margin-top: 6px;
-      border-radius: var(--radius-lg);
-      border: 1px solid var(--border);
-      overflow: auto;
-    }
-
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      font-size: 0.8rem;
-      background: var(--bg-main);
-      min-width: 720px;
-    }
-
-    th, td {
-      padding: 8px 10px;
-      border-bottom: 1px solid var(--border);
-      text-align: left;
-      vertical-align: middle;
-    }
-
-    th {
-      background: var(--bg-soft);
-      font-weight: 600;
-      font-size: 0.78rem;
-      color: var(--text-muted);
-      white-space: nowrap;
-    }
-
-    tr:last-child td {
-      border-bottom: none;
-    }
-
-    .tag {
-      display: inline-flex;
-      padding: 2px 7px;
-      border-radius: 999px;
-      background: var(--bg-soft);
-      font-size: 0.7rem;
-      color: var(--text-muted);
-    }
-
-    .tag-green {
-      background: #dcfce7;
-      color: #166534;
-    }
-
-    .tag-yellow {
-      background: #fef9c3;
-      color: #854d0e;
-    }
-
-    .tag-red {
-      background: #fee2e2;
-      color: #991b1b;
-    }
-
-    .input-inline {
-      width: 100%;
-      padding: 4px 6px;
-      font-size: 0.78rem;
-      border-radius: 6px;
-      border: 1px solid var(--border);
-      background: var(--bg-main);
-    }
-
-    .section-note {
-      font-size: 0.76rem;
-      color: var(--text-muted);
-      margin-top: 6px;
-    }
-
-    .stage-checks {
-      display: grid;
-      grid-template-columns: repeat(3, minmax(70px, 1fr));
-      gap: 6px;
-      align-items: center;
-    }
-
-    .stage-checks label {
-      display: flex;
-      gap: 6px;
-      align-items: center;
-      font-size: 0.76rem;
-      color: var(--text-muted);
-    }
-
-    .pill-small {
-      display: inline-flex;
-      align-items: center;
-      gap: 4px;
-      padding: 2px 6px;
-      border-radius: 999px;
-      background: var(--accent-soft);
-      color: var(--accent);
-      font-size: 0.7rem;
-      font-weight: 600;
-    }
-
-    /* Modal */
-    .modal-backdrop {
-      position: fixed;
-      inset: 0;
-      background: rgba(17, 24, 39, 0.35);
-      display: none;
-      align-items: center;
-      justify-content: center;
-      padding: 16px;
-      z-index: 50;
-    }
-
-    .modal-backdrop.active {
-      display: flex;
-    }
-
-    .modal {
-      background: var(--bg-main);
-      border-radius: var(--radius-lg);
-      border: 1px solid var(--border);
-      width: min(720px, 100%);
-      box-shadow: 0 15px 45px rgba(0, 0, 0, 0.12);
-      overflow: hidden;
-    }
-
-    .modal header {
-      padding: 14px 16px;
-      border-bottom: 1px solid var(--border);
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 10px;
-    }
-
-    .modal header h3 {
-      font-size: 1rem;
-      font-weight: 600;
-    }
-
-    .modal .modal-body {
-      padding: 14px 16px;
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-      gap: 12px;
-    }
-
-    .modal .field {
-      display: flex;
-      flex-direction: column;
-      gap: 6px;
-    }
-
-    .modal label {
-      font-size: 0.78rem;
-      color: var(--text-muted);
-    }
-
-    .modal input,
-    .modal select,
-    .modal textarea {
-      border: 1px solid var(--border);
-      border-radius: 8px;
-      padding: 8px 10px;
-      font-size: 0.85rem;
-      background: var(--bg-main);
-      width: 100%;
-    }
-
-    .modal textarea {
-      min-height: 60px;
-      resize: vertical;
-    }
-
-
-
-    .modal footer {
-      border-top: 1px solid var(--border);
-      padding: 12px 16px;
-      display: flex;
-      justify-content: flex-end;
-      gap: 8px;
-    }
-
-    @media (max-width: 840px) {
-      .layout {
-        grid-template-columns: 1fr;
+  <head>
+    <meta charset="UTF-8" />
+    <title>PodTechs - Leads</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <style>
+      :root {
+        --accent: #3b82f6;
+        --border: #e5e7eb;
+        --text-main: #111827;
+        --text-muted: #6b7280;
+        --bg-main: #ffffff;
+        --bg-soft: #f3f4f6;
+        --radius-lg: 12px;
       }
-      .sidebar {
-        border-right: none;
-        border-bottom: 1px solid var(--border);
+
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+        font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+          sans-serif;
+      }
+
+      body {
+        background: #f9fafb;
+        color: var(--text-main);
+      }
+
+      .app {
+        max-width: 1120px;
+        margin: 0 auto;
+        padding: 20px 16px 40px;
+      }
+
+      header {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: space-between;
+        align-items: flex-start;
+        gap: 10px;
+        margin-bottom: 18px;
+      }
+
+      .title {
+        font-size: 1.5rem;
+        font-weight: 700;
+      }
+
+      .title span {
+        color: var(--accent);
+      }
+
+      .subtitle {
+        font-size: 0.9rem;
+        color: var(--text-muted);
+        margin-top: 4px;
+        max-width: 440px;
+      }
+
+      .badge {
+        border-radius: 999px;
+        border: 1px solid var(--border);
+        padding: 4px 10px;
+        font-size: 0.78rem;
+        color: var(--text-muted);
+        background: var(--bg-main);
+      }
+
+      .cards-row {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+        gap: 10px;
+        margin-bottom: 18px;
+      }
+
+      .card {
+        background: var(--bg-main);
+        border-radius: var(--radius-lg);
+        border: 1px solid var(--border);
+        padding: 10px 12px;
+      }
+
+      .card-label {
+        font-size: 0.8rem;
+        color: var(--text-muted);
+        margin-bottom: 4px;
+      }
+
+      .card-value {
+        font-size: 1.3rem;
+        font-weight: 600;
+      }
+
+      .card-foot {
+        margin-top: 4px;
+        font-size: 0.75rem;
+        color: var(--text-muted);
+      }
+
+      .panel {
+        background: var(--bg-main);
+        border-radius: var(--radius-lg);
+        border: 1px solid var(--border);
+        padding: 12px 14px;
+        margin-bottom: 16px;
+      }
+
+      .panel-header {
+        font-size: 0.95rem;
+        font-weight: 600;
+        margin-bottom: 6px;
+      }
+
+      .panel-subtitle {
+        font-size: 0.8rem;
+        color: var(--text-muted);
+        margin-bottom: 10px;
+      }
+
+      .form-row {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+        gap: 8px;
+        margin-bottom: 8px;
+      }
+
+      .field {
         display: flex;
         flex-direction: column;
-        gap: 6px;
+        gap: 4px;
+        font-size: 0.8rem;
       }
-    }
-  </style>
-</head>
-<body>
-  <div class="layout">
-    <aside class="sidebar">
-      <div class="logo-row">
-        <img src="Assets/images.png" alt="PodTechs logo" class="logo-mark" />
+
+      .field label {
+        color: var(--text-muted);
+      }
+
+      .input,
+      .select {
+        padding: 6px 8px;
+        border-radius: 8px;
+        border: 1px solid var(--border);
+        font-size: 0.82rem;
+        background: var(--bg-main);
+      }
+
+      .btn {
+        border-radius: 999px;
+        border: 1px solid var(--border);
+        background: var(--bg-main);
+        font-size: 0.82rem;
+        padding: 6px 12px;
+        cursor: pointer;
+      }
+
+      .btn-primary {
+        border-color: var(--accent);
+        background: var(--accent);
+        color: #ffffff;
+        font-weight: 500;
+      }
+
+      .btn-primary:hover {
+        opacity: 0.95;
+      }
+
+      .table-wrapper {
+        border-radius: var(--radius-lg);
+        border: 1px solid var(--border);
+        overflow: auto;
+        background: var(--bg-main);
+      }
+
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 0.8rem;
+        min-width: 780px;
+      }
+
+      th,
+      td {
+        padding: 8px 10px;
+        border-bottom: 1px solid var(--border);
+        text-align: left;
+        vertical-align: middle;
+      }
+
+      th {
+        background: var(--bg-soft);
+        font-weight: 600;
+        font-size: 0.78rem;
+        color: var(--text-muted);
+        white-space: nowrap;
+      }
+
+      tr:last-child td {
+        border-bottom: none;
+      }
+
+      .tag {
+        display: inline-flex;
+        padding: 2px 7px;
+        border-radius: 999px;
+        font-size: 0.7rem;
+        background: var(--bg-soft);
+        color: var(--text-muted);
+      }
+
+      .tag-high {
+        background: #fee2e2;
+        color: #991b1b;
+      }
+
+      .tag-medium {
+        background: #fef9c3;
+        color: #854d0e;
+      }
+
+      .tag-low {
+        background: #e5e7eb;
+        color: #374151;
+      }
+
+      .input-inline {
+        width: 100%;
+        padding: 4px 6px;
+        font-size: 0.78rem;
+        border-radius: 6px;
+        border: 1px solid var(--border);
+        background: var(--bg-main);
+      }
+
+      .note {
+        font-size: 0.76rem;
+        color: var(--text-muted);
+        margin-top: 6px;
+      }
+
+      .status {
+        margin-top: 8px;
+        font-size: 0.8rem;
+        color: var(--text-muted);
+      }
+
+      .status.error {
+        color: #991b1b;
+      }
+
+      @media (max-width: 640px) {
+        header {
+          align-items: flex-start;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="app">
+      <header>
         <div>
-          <div class="logo">PodTechs <span>Journey</span></div>
-        </div>
-      </div>
-
-      <div class="nav-section-label">Overview</div>
-      <div class="nav">
-        <button class="nav-btn active" data-target="dashboard">
-          <span class="icon">D</span> Dashboard
-        </button>
-      </div>
-
-      <div class="nav-section-label">Pipeline</div>
-      <div class="nav">
-        <button class="nav-btn" data-target="leads">
-          <span class="icon">L</span> Leads
-        </button>
-        <button class="nav-btn" data-target="acquisition">
-          <span class="icon">A</span> Acquisition
-        </button>
-        <button class="nav-btn" data-target="retention">
-          <span class="icon">C</span> Retention
-        </button>
-        <button class="nav-btn" data-target="renewals">
-          <span class="icon">R</span> Renewals
-        </button>
-        <button class="nav-btn" data-target="rejected">
-          <span class="icon">X</span> Rejected
-        </button>
-      </div>
-
-      <div class="sidebar-footer">
-        This is an MVP.
-        <div class="pill">
-          Manual tracking first
-        </div>
-      </div>
-    </aside>
-
-    <main class="main">
-      <header class="main-header">
-        <div>
-          <div class="main-title">Journey System - Internal View</div>
-          <div class="main-subtitle">
-            Track lead to acquisition to client to renewal in one simple place.
+          <div class="title">PodTechs <span>Leads</span></div>
+          <div class="subtitle">
+            MVP focused on Leads. Add, view, and prioritize. Data stored in Supabase.
           </div>
         </div>
-        <div class="view-badge">Internal - PodTechs team only</div>
+        <div class="badge">Internal - local + Supabase</div>
       </header>
+
       <section class="cards-row">
         <article class="card">
-          <div class="card-label">Leads (this month)</div>
-          <div class="card-value" id="metric-leads">0</div>
-          <div class="card-foot">Manually added from Twine or LinkedIn</div>
+          <div class="card-label">Total leads</div>
+          <div class="card-value" id="count-total">0</div>
+          <div class="card-foot">Records in Supabase</div>
         </article>
         <article class="card">
-          <div class="card-label">In acquisition</div>
-          <div class="card-value" id="metric-acquisition">0</div>
-          <div class="card-foot">Actively in conversations</div>
+          <div class="card-label">High priority</div>
+          <div class="card-value" id="count-high">0</div>
+          <div class="card-foot">Top to act on</div>
         </article>
         <article class="card">
-          <div class="card-label">First episode delivered</div>
-          <div class="card-value" id="metric-first-episode">0</div>
-          <div class="card-foot">Ready for retention tracking</div>
-        </article>
-        <article class="card">
-          <div class="card-label">Renewals in next 60 days</div>
-          <div class="card-value" id="metric-renewals">0</div>
-          <div class="card-foot">Needs attention</div>
+          <div class="card-label">Last lead</div>
+          <div class="card-value" id="last-lead">-</div>
+          <div class="card-foot">Most recent name</div>
         </article>
       </section>
 
-      <section id="dashboard" class="section active">
-        <div class="section-header">
-          <h2>Pipeline overview</h2>
-          <small>High level snapshot of where everyone is in the journey.</small>
+      <section class="panel">
+        <div class="panel-header">Add lead</div>
+        <div class="panel-subtitle">
+          Manual first: fill key fields, save to Supabase.
         </div>
-        <div class="table-wrapper">
-          <table>
-            <thead>
-              <tr>
-                <th>Client or Lead</th>
-                <th>Stage</th>
-                <th>Channel</th>
-                <th>Last touch</th>
-                <th>Next action</th>
-                <th>Episode due date</th>
-                <th>Feedback request</th>
-                <th>Owner</th>
-              </tr>
-            </thead>
-            <tbody id="dashboard-body"></tbody>
-          </table>
-        </div>
-        <p class="section-note">
-          Later you can plug real data here from your database; for now it is a manual snapshot you can glance at.
+        <form id="lead-form">
+          <div class="form-row">
+            <div class="field">
+              <label for="company">Project / Company</label>
+              <input
+                class="input"
+                id="company"
+                name="company"
+                placeholder="e.g. North Bay Home Expo Podcast"
+                required
+              />
+            </div>
+            <div class="field">
+              <label for="contact">Main contact</label>
+              <input
+                class="input"
+                id="contact"
+                name="contact"
+                placeholder="e.g. Jane Doe"
+              />
+            </div>
+            <div class="field">
+              <label for="contactInfo">Email / WhatsApp</label>
+              <input
+                class="input"
+                id="contactInfo"
+                name="contactInfo"
+                placeholder="e.g. jane@example.com / +55 11 99999-9999"
+              />
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="field">
+              <label for="source">Channel</label>
+              <input
+                class="input"
+                id="source"
+                name="source"
+                placeholder="Twine, LinkedIn, referral..."
+              />
+            </div>
+            <div class="field">
+              <label for="priority">Priority</label>
+              <select class="select" id="priority" name="priority">
+                <option value="high">High</option>
+                <option value="medium">Medium</option>
+                <option value="low">Low</option>
+              </select>
+            </div>
+            <div class="field">
+              <label for="lastTouch">Last touch</label>
+              <input
+                class="input"
+                id="lastTouch"
+                name="lastTouch"
+                placeholder="e.g. yesterday, 3 days ago, not contacted"
+              />
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="field">
+              <label for="nextStep">Next step</label>
+              <input
+                class="input"
+                id="nextStep"
+                name="nextStep"
+                placeholder="e.g. book intro call"
+              />
+            </div>
+          </div>
+
+          <button type="submit" class="btn btn-primary">+ Add lead</button>
+          <div id="status" class="status"></div>
+        </form>
+        <p class="note">
+          Data is stored in Supabase. Make sure <code>config.js</code> has your project URL and anon key.
         </p>
       </section>
 
-      <section id="leads" class="section">
-        <div class="section-header">
-          <div>
-            <h2>Leads</h2>
-            <small>Raw leads before they respond - top of funnel.</small>
-          </div>
-          <div class="section-actions">
-            <button class="btn" id="import-csv-btn">Import CSV</button>
-            <button class="btn btn-primary" id="add-lead-btn">+ Add lead</button>
-          </div>
+      <section>
+        <div class="panel-header">Leads</div>
+        <div class="panel-subtitle">
+          See channel, priority, last touch, and next step in one view.
         </div>
         <div class="table-wrapper">
           <table>
             <thead>
               <tr>
-                <th>Source</th>
-                <th>Project or Company</th>
+                <th>Project / Company</th>
                 <th>Contact</th>
-                <th>Service interest</th>
+                <th>Channel</th>
                 <th>Priority</th>
                 <th>Last touch</th>
                 <th>Next step</th>
-                <th>Actions</th>
-                <th>Reject</th>
+                <th>Created at</th>
               </tr>
             </thead>
-            <tbody id="leads-body"></tbody>
+            <tbody id="lead-body"></tbody>
           </table>
         </div>
-        <p class="section-note">
-          Checking move to acquisition starts the 3 stage acquisition flow.
+        <p class="note">
+          Editing inline updates Supabase immediately.
         </p>
       </section>
-      <section id="acquisition" class="section">
-        <div class="section-header">
-          <div>
-            <h2>Acquisition</h2>
-            <small>Leads who replied and are in active conversation.</small>
-          </div>
-          <div class="section-actions">
-            <button class="btn" id="filter-high-btn">View high priority</button>
-          </div>
-        </div>
-        <div class="table-wrapper">
-          <table>
-            <thead>
-              <tr>
-                <th>Client or Project</th>
-                <th>Substages</th>
-                <th>Channel</th>
-                <th>Last contact</th>
-                <th>Next action</th>
-                <th>Meeting date</th>
-                <th>Move to client</th>
-              </tr>
-            </thead>
-            <tbody id="acquisition-body"></tbody>
-          </table>
-        </div>
-        <p class="section-note">
-          Once the first episode is delivered, the prospect becomes a client and moves to retention.
-        </p>
-      </section>
-
-      <section id="retention" class="section">
-        <div class="section-header">
-          <div>
-            <h2>Retention</h2>
-            <small>Active paying retention with ongoing production.</small>
-          </div>
-          <div class="section-actions">
-            <button class="btn" id="export-btn">Export</button>
-          </div>
-        </div>
-        <div class="table-wrapper">
-          <table>
-            <thead>
-              <tr>
-                <th>Client</th>
-                <th>Start date</th>
-                <th>Services</th>
-                <th>Cadence</th>
-                <th>Account owner</th>
-                <th>Health</th>
-                <th>Notes</th>
-                <th>Retention actions</th>
-              </tr>
-            </thead>
-            <tbody id="retention-body"></tbody>
-          </table>
-        </div>
-        <p class="section-note">
-          Use the retention actions to log reviews, testimony, and renewals.
-        </p>
-      </section>
-
-      <section id="renewals" class="section">
-        <div class="section-header">
-          <div>
-            <h2>Renewals</h2>
-            <small>Retention approaching the end of their contract.</small>
-          </div>
-          <div class="section-actions">
-            <button class="btn" id="next-30-btn">Show next 30 days</button>
-            <button class="btn btn-primary" id="renewal-calls-btn">Schedule renewal calls</button>
-          </div>
-        </div>
-        <div class="table-wrapper">
-          <table>
-            <thead>
-              <tr>
-                <th>Client</th>
-                <th>Renewal date</th>
-                <th>Contract value</th>
-                <th>Renewal probability</th>
-                <th>Last check-in</th>
-                <th>Action</th>
-              </tr>
-            </thead>
-            <tbody id="renewals-body"></tbody>
-          </table>
-        </div>
-        <p class="section-note">
-          This view can later be powered by Supabase and send reminders to Slack or email.
-        </p>
-      </section>
-
-      <section id="rejected" class="section">
-        <div class="section-header">
-          <div>
-            <h2>Rejected leads</h2>
-            <small>Leads disqualified or closed-lost.</small>
-          </div>
-          <div class="section-actions">
-            <button class="btn" id="purge-rejected-btn">Delete all</button>
-          </div>
-        </div>
-        <div class="table-wrapper">
-          <table>
-            <thead>
-              <tr>
-                <th>Name</th>
-                <th>Contact</th>
-                <th>Source</th>
-                <th>Notes</th>
-                <th>Actions</th>
-              </tr>
-            </thead>
-            <tbody id="rejected-body"></tbody>
-          </table>
-        </div>
-        <p class="section-note">Delete removes the record from this MVP. You can restore from Supabase later.</p>
-      </section>
-    </main>
-  </div>
-
-  <div class="modal-backdrop" id="lead-modal">
-    <div class="modal">
-      <header>
-        <h3 id="lead-modal-title">Add lead</h3>
-        <button type="button" class="btn" id="lead-modal-close">Close</button>
-      </header>
-      <form id="lead-form">
-        <div class="modal-body">
-          <div class="field">
-            <label for="lead-source">Source</label>
-            <select id="lead-source" required>
-              <option value="">Select source</option>
-              <option value="Twine">Twine</option>
-              <option value="LinkedIn">LinkedIn</option>
-              <option value="Referral">Referral</option>
-              <option value="Other">Other</option>
-            </select>
-          </div>
-          <div class="field">
-            <label for="lead-name">Project or Company</label>
-            <input id="lead-name" type="text" placeholder="Future of Retail Audio" required />
-          </div>
-          <div class="field">
-            <label for="lead-email">Contact email</label>
-            <input id="lead-email" type="email" placeholder="name@example.com" required />
-          </div>
-          <div class="field">
-            <label for="lead-phone">Contact phone</label>
-            <input id="lead-phone" type="text" placeholder="+1 (555) 000-0000" />
-          </div>
-          <div class="field">
-            <label for="lead-service">Service interest</label>
-            <input id="lead-service" type="text" placeholder="Full production" />
-          </div>
-          <div class="field">
-            <label for="lead-priority">Priority</label>
-            <select id="lead-priority">
-              <option value="High">High</option>
-              <option value="Medium" selected>Medium</option>
-              <option value="Low">Low</option>
-            </select>
-          </div>
-          <div class="field">
-            <label for="lead-stage">Stage</label>
-            <select id="lead-stage">
-              <option value="lead">Lead</option>
-              <option value="acquisition">Acquisition</option>
-              <option value="retention">Retention</option>
-              <option value="rejected">Rejected</option>
-            </select>
-          </div>
-          <div class="field">
-            <label for="lead-last-touch">Last touch</label>
-            <input id="lead-last-touch" type="text" placeholder="Not contacted" />
-          </div>
-          <div class="field">
-            <label for="lead-next-step">Next step</label>
-            <textarea id="lead-next-step" placeholder="Draft outreach"></textarea>
-          </div>
-        </div>
-        <div class="modal-body">
-          <div class="field" style="grid-column: 1 / -1;">
-            <label>History</label>
-            <div id="lead-history" class="section-note" style="max-height: 140px; overflow:auto; border:1px solid var(--border); border-radius:8px; padding:8px; background: var(--bg-soft);"></div>
-          </div>
-        </div>
-        <footer>
-          <button type="button" class="btn" id="lead-cancel">Cancel</button>
-          <button type="submit" class="btn btn-primary" id="lead-submit">Save lead</button>
-        </footer>
-      </form>
     </div>
-  </div>
 
-  <script>
-    const substages = ["FIRST CONTACT", "FIRST MEETING", "TRAILER SENT", "FIRST EPISODE DELIVERED"];
-    const state = { records: [
-      {
-        id: 1,
-        name: "The Home Expo Podcast - SonomaNorthBayHomeExpo.com",
-        contact: "dustin@example.com / +1 (555) 111-2222",
-        contactEmail: "dustin@example.com",
-        contactPhone: "+1 (555) 111-2222",
-        type: "Referral",
-        stage: "retention",
-        substage: "FIRST EPISODE DELIVERED",
-        serviceInterest: "Full production ? Clips",
-        priority: "High",
-        lastTouch: "This week",
-        nextStep: "Prep renewal proposal",
-        owner: "Dustin",
-        channel: "Email",
-        retention: {
-          reviews: ["Episode 1 approved", "Episode 2 needs tweaks"],
-          testimony: "Great partner so far!",
-          renewDate: "2026-02-15",
-          contractValue: ",000 / year",
-          renewalProbability: "High (9/10)",
-          lastCheckIn: "Last week",
-          nextEpisodeDue: "2026-01-10",
-          feedbackStatus: "Sent to client"
-        },
-        history: []
-      },
-      {
-        id: 2,
-        name: "Ric Mims",
-        contact: "ric@example.com / +1 (555) 333-4444",
-        contactEmail: "ric@example.com",
-        contactPhone: "+1 (555) 333-4444",
-        type: "LinkedIn",
-        stage: "lead",
-        substage: null,
-        serviceInterest: "Podcast launch",
-        priority: "Medium",
-        lastTouch: "Not contacted",
-        nextStep: "Draft first outreach",
-        owner: "Rodrigo",
-        channel: "LinkedIn",
-        history: []
-      },
-      {
-        id: 3,
-        name: "Sorelle Wealth Partners",
-        contact: "info@sorellewealth.com / +1 (555) 777-8888",
-        contactEmail: "info@sorellewealth.com",
-        contactPhone: "+1 (555) 777-8888",
-        type: "Referral",
-        stage: "acquisition",
-        substage: "FIRST CONTACT",
-        serviceInterest: "Podcast revamp",
-        priority: "High",
-        lastTouch: "Today",
-        nextStep: "Book first meeting",
-        owner: "Dustin",
-        channel: "Email",
-        meetingDate: "2025-11-25",
-        history: []
-      }
-    ] };
-
-    const leadModal = document.getElementById("lead-modal");
-    const leadForm = document.getElementById("lead-form");
-    const leadModalClose = document.getElementById("lead-modal-close");
-    const leadCancel = document.getElementById("lead-cancel");
-    const leadPriority = document.getElementById("lead-priority");
-    const leadStage = document.getElementById("lead-stage");
-    const leadModalTitle = document.getElementById("lead-modal-title");
-    const leadSubmit = document.getElementById("lead-submit");
-    const leadHistoryBox = document.getElementById("lead-history");
-    let editingLeadId = null;
-
-    function renderHistory(record) {
-      const history = record && record.history ? record.history : [];
-      if (!history.length) {
-        leadHistoryBox.innerHTML = "<div class\"section-note\">No history yet.</div>";
-        return;
-      }
-      leadHistoryBox.innerHTML = history.map(item => `<div><strong>${item.at}</strong> - ${item.message}</div>`).join('');
-    }
-
-    function appendLog(record, message) {
-      const history = [...(record.history || [])];
-      history.push({ at: new Date().toLocaleString(), message });
-      return { ...record, history };
-    }
-
-    function openLeadModal(record) {
-      leadForm.reset();
-      leadPriority.value = "Medium";
-      leadStage.value = "lead";
-      editingLeadId = record ? record.id : null;
-      const titleStage = record && record.stage ? record.stage : "lead";
-      const prettyStage = titleStage.charAt(0).toUpperCase() + titleStage.slice(1);
-      leadModalTitle.textContent = record ? `View / Edit ${prettyStage}` : "Add lead";
-      leadSubmit.textContent = record ? "Save changes" : "Save lead";
-      if (record) {
-        document.getElementById("lead-source").value = record.type || "";
-        document.getElementById("lead-name").value = record.name || "";
-        document.getElementById("lead-email").value = record.contactEmail || "";
-        document.getElementById("lead-phone").value = record.contactPhone || "";
-        document.getElementById("lead-service").value = record.serviceInterest || "";
-        document.getElementById("lead-last-touch").value = record.lastTouch || "Not contacted";
-        document.getElementById("lead-next-step").value = record.nextStep || "Draft outreach";
-        leadPriority.value = record.priority || "Medium";
-        leadStage.value = record.stage || "lead";
-      }
-      renderHistory(record || { history: [] });
-      leadModal.classList.add("active");
-    }
-
-    function closeLeadModal() {
-      leadModal.classList.remove("active");
-      editingLeadId = null;
-      renderHistory({ history: [] });
-    }
-
-    function buildLeadFromForm(existing) {
-      const source = document.getElementById("lead-source").value || "";
-      const name = document.getElementById("lead-name").value || "";
-      const email = document.getElementById("lead-email").value || "";
-      const phone = document.getElementById("lead-phone").value || "";
-      const serviceInterest = document.getElementById("lead-service").value || "";
-      const priority = leadPriority.value || "Medium";
-      const lastTouch = document.getElementById("lead-last-touch").value || "Not contacted";
-      const nextStep = document.getElementById("lead-next-step").value || "Draft outreach";
-      const stage = document.getElementById("lead-stage").value || "lead";
-      const contactCombined = [email, phone].filter(Boolean).join(' / ') || email || phone || "N/A";
-      const base = existing || {};
-      const retentionData = base.retention || { reviews: [], testimony: "", renewDate: getDefaultRenewalDate(), contractValue: "TBD", renewalProbability: "Pending", lastCheckIn: "Today", nextEpisodeDue: getDefaultEpisodeDueDate(), feedbackStatus: "Not sent" };
-      const computedSubstage = stage === "acquisition" ? (base.substage || "FIRST CONTACT") : (stage === "retention" ? "FIRST EPISODE DELIVERED" : null);
-      return {
-        id: base.id || Date.now(),
-        name,
-        contact: contactCombined,
-        contactEmail: email,
-        contactPhone: phone,
-        type: source || base.type || "Other",
-        stage,
-        substage: computedSubstage,
-        serviceInterest,
-        priority,
-        lastTouch,
-        nextStep,
-        owner: base.owner || "Unassigned",
-        channel: source,
-        retention: stage === "retention" ? retentionData : base.retention,
-        history: base.history || []
-      };
-    }
-
-    function setActiveSection(targetId) {
-      document.querySelectorAll(".nav-btn").forEach(btn => {
-        btn.classList.toggle("active", btn.dataset.target === targetId);
-      });
-      document.querySelectorAll(".section").forEach(section => {
-        section.classList.toggle("active", section.id === targetId);
-      });
-    }
-
-    function formatStageTag(record) {
-      if (record.stage === "retention") return '<span class="tag tag-green">Client</span>';
-      if (record.stage === "acquisition") return '<span class="tag tag-yellow">Acquisition</span>';
-      if (record.stage === "rejected") return '<span class="tag tag-red">Rejected</span>';
-      return '<span class="tag">Lead</span>';
-    }
-
-    function getUpcomingRenewals(days) {
-      const today = new Date();
-      const threshold = new Date();
-      threshold.setDate(today.getDate() + days);
-      return state.records.filter(r => {
-        if (r.stage !== "retention" || !r.retention || !r.retention.renewDate) return false;
-        const renewDate = new Date(r.retention.renewDate);
-        return renewDate >= today && renewDate <= threshold;
-      }).length;
-    }
-
-    function renderMetrics() {
-      const leadsCount = state.records.filter(r => r.stage === "lead").length;
-      const acquisitionCount = state.records.filter(r => r.stage === "acquisition").length;
-      const firstEpisodeRetention = state.records.filter(r => r.stage === "retention" && r.substage === "FIRST EPISODE DELIVERED").length;
-      const upcomingRenewals = getUpcomingRenewals(60);
-
-      document.getElementById("metric-leads").textContent = leadsCount;
-      document.getElementById("metric-acquisition").textContent = acquisitionCount;
-      document.getElementById("metric-first-episode").textContent = firstEpisodeRetention;
-      document.getElementById("metric-renewals").textContent = upcomingRenewals;
-    }
-
-    function renderDashboard() {
-      const tbody = document.getElementById("dashboard-body");
-      tbody.innerHTML = "";
-      const sorted = [...state.records].sort((a, b) => a.stage.localeCompare(b.stage));
-      sorted.forEach(record => {
-        const row = document.createElement("tr");
-        row.innerHTML = `
-          <td>${record.name}</td>
-          <td>${formatStageTag(record)}</td>
-          <td>${record.channel || record.type || "N/A"}</td>
-          <td>${record.lastTouch || "N/A"}</td>
-          <td>${record.nextAction || record.nextStep || "Decide priority"}</td>
-          <td>${(record.retention && record.retention.nextEpisodeDue) || (record.stage === "retention" ? "Not set" : "-")}</td>
-          <td>${(record.retention && record.retention.feedbackStatus) || (record.stage === "retention" ? "Not sent" : "-")}</td>
-          <td>${record.owner || "Unassigned"}</td>
-        `;
-        tbody.appendChild(row);
-      });
-    }
-
-    function renderLeads() {
-      const tbody = document.getElementById("leads-body");
-      tbody.innerHTML = "";
-      const leads = state.records.filter(r => r.stage === "lead");
-      leads.forEach(lead => {
-        const row = document.createElement("tr");
-        const priorityClass = lead.priority === "High" ? "tag-green" : lead.priority === "Medium" ? "tag-yellow" : "";
-        row.innerHTML = `
-          <td>${lead.type}</td>
-          <td>${lead.name}</td>
-          <td>${lead.contact}</td>
-          <td>${lead.serviceInterest || "N/A"}</td>
-          <td><span class="tag ${priorityClass}">${lead.priority || "None"}</span></td>
-          <td>${lead.lastTouch || "Not contacted"}</td>
-          <td>${lead.nextStep || "Set first touch"}</td>
-          <td>
-            <div class="section-actions">
-              <button class="btn btn-primary" data-action="lead-promote" data-id="${lead.id}">Promote</button>
-              <button class="btn" data-action="lead-reject" data-id="${lead.id}">Reject</button>
-              <button class="btn" data-action="view-lead" data-id="${lead.id}">View / Edit</button>
-            </div>
-          </td>
-        `;
-        tbody.appendChild(row);
-      });
-    }
-
-    function renderAcquisition(filterHigh = false) {
-      const tbody = document.getElementById("acquisition-body");
-      tbody.innerHTML = "";
-      let prospects = state.records.filter(r => r.stage === "acquisition");
-      if (filterHigh) prospects = prospects.filter(r => r.priority === "High");
-
-      prospects.forEach(prospect => {
-        const row = document.createElement("tr");
-        row.innerHTML = `
-          <td>${prospect.name}</td>
-          <td>
-            <div class="stage-checks" data-id="${prospect.id}">
-              ${substages.map(stage => {
-                const checked = substages.indexOf(prospect.substage || "") >= substages.indexOf(stage) ? "checked" : "";
-                return `
-                  <label>
-                    <input type="checkbox" data-action="update-substage" data-stage="${stage}" data-id="${prospect.id}" ${checked}>
-                    ${stage}
-                  </label>
-                `;
-              }).join("")}
-            </div>
-          </td>
-          <td>${prospect.channel || prospect.type || "N/A"}</td>
-          <td>${prospect.lastTouch || "N/A"}</td>
-          <td>${prospect.nextAction || "Set next action"}</td>
-          <td>${prospect.meetingDate || "Not set"}</td>
-          <td><button class="btn" data-action="view-acq" data-id="${prospect.id}">View / Edit</button></td>
-        `;
-        tbody.appendChild(row);
-      });
-    }
-    function renderRetention() {
-      const tbody = document.getElementById("retention-body");
-      tbody.innerHTML = "";
-      const retention = state.records.filter(r => r.stage === "retention");
-      retention.forEach(client => {
-        const row = document.createElement("tr");
-        const healthClass = client.health === "Healthy" ? "tag-green" : client.health === "Watch" ? "tag-yellow" : "tag-red";
-        row.innerHTML = `
-          <td>${client.name}</td>
-          <td>${client.startDate || "TBD"}</td>
-          <td>${client.services || "Not set"}</td>
-          <td>${client.cadence || "TBD"}</td>
-          <td>${client.owner || "Unassigned"}</td>
-          <td><span class="tag ${healthClass}">${client.health || "Check"}</span></td>
-          <td>${client.nextAction || client.lastTouch || "Add a note"}</td>
-          <td>
-            <div class="section-actions">
-              <button class="btn btn-primary" data-action="view-client" data-id="${client.id}">Actions Dashboard</button>
-            </div>
-            <div class="section-note">Renewal: ${(client.retention && client.retention.renewDate) || "Not set"}</div>
-          </td>
-        `;
-        tbody.appendChild(row);
-      });
-    }
-
-
-    function renderRenewals(onlyNext30 = false) {
-      const tbody = document.getElementById("renewals-body");
-      tbody.innerHTML = "";
-      let data = state.records.filter(r => r.stage === "retention" && r.retention && r.retention.renewDate);
-      data = data.sort((a, b) => new Date(a.retention.renewDate) - new Date(b.retention.renewDate));
-      const today = new Date();
-      const limitDate = new Date();
-      limitDate.setDate(today.getDate() + 30);
-      if (onlyNext30) {
-        data = data.filter(r => new Date(r.retention.renewDate) <= limitDate);
-      }
-
-      data.forEach(client => {
-        const row = document.createElement("tr");
-        row.innerHTML = `
-          <td>${client.name}</td>
-          <td>${client.retention.renewDate}</td>
-          <td>${client.retention.contractValue || "TBD"}</td>
-          <td>${client.retention.renewalProbability || "Set probability"}</td>
-          <td>${client.retention.lastCheckIn || "Set check in"}</td>
-          <td><button class="btn" data-action="view-renewal" data-id="${client.id}">View / Edit</button></td>
-        `;
-        tbody.appendChild(row);
-      });
-    }
-
-    function renderRejected() {
-      const tbody = document.getElementById("rejected-body");
-      tbody.innerHTML = "";
-      const rejected = state.records.filter(r => r.stage === "rejected");
-      rejected.forEach(item => {
-        const row = document.createElement("tr");
-        row.innerHTML = `
-          <td>${item.name}</td>
-          <td>${item.contact || "N/A"}</td>
-          <td>${item.type || "N/A"}</td>
-          <td>${item.nextStep || item.nextAction || "No notes"}</td>
-          <td>
-            <div class=\"section-actions\">
-              <button class=\"btn\" data-action=\"delete-rejected\" data-id=\"${item.id}\">Delete</button>
-            </div>
-          </td>
-        `;
-        tbody.appendChild(row);
-      });
-    }
-
-    function moveLeadToAcquisition(id) {
-      state.records = state.records.map(record => {
-        if (record.id === id && record.stage === "lead") {
-          return appendLog({ ...record, stage: "acquisition", substage: "FIRST CONTACT", nextAction: "Book first meeting", lastTouch: "Today" }, "Stage changed lead -> acquisition");
-        }
-        return record;
-      });
-    }
-
-    function moveLeadToRejected(id) {
-      state.records = state.records.map(record => {
-        if (record.id === id && record.stage === "lead") {
-          return appendLog({ ...record, stage: "rejected", substage: null, nextAction: record.nextStep || record.nextAction || "Rejected" }, "Stage changed lead -> rejected");
-        }
-        return record;
-      });
-    }
-
-    function setSubstage(id, stage) {
-      state.records = state.records.map(record => {
-        if (record.id === id) {
-          if (stage === "FIRST EPISODE DELIVERED") {
-            return {
-              ...record,
-              stage: "retention",
-              substage: "FIRST EPISODE DELIVERED",
-              retention: record.retention || {
-                reviews: [],
-                testimony: "",
-                renewDate: getDefaultRenewalDate(),
-                contractValue: "TBD",
-                renewalProbability: "Pending",
-                lastCheckIn: "Today"
-              },
-              nextAction: "Kick off retention"
-            };
-          }
-          return { ...record, stage: "acquisition", substage: stage };
-        }
-        return record;
-      });
-    }
-
-    function getDefaultRenewalDate() {
-      const date = new Date();
-      date.setDate(date.getDate() + 90);
-      return date.toISOString().slice(0, 10);
-    }
-
-    function getDefaultEpisodeDueDate() {
-      const date = new Date();
-      date.setDate(date.getDate() + 14);
-      return date.toISOString().slice(0, 10);
-    }
-
-    function ensureNav() {
-      document.querySelectorAll(".nav-btn").forEach(btn => {
-        btn.addEventListener("click", () => setActiveSection(btn.dataset.target));
-      });
-    }
-
-    function handleLeadsEvents() {
-      document.getElementById("leads-body").addEventListener("change", event => {
-        const target = event.target;
-        if (target.dataset.action === "lead-to-acquisition") {
-          moveLeadToAcquisition(Number(target.dataset.id));
-          renderAll();
-        }
-      });
-      document.getElementById("leads-body").addEventListener("click", event => {
-        const target = event.target;
-        const id = Number(target.dataset.id);
-        if (!id) return;
-        if (target.dataset.action === "lead-reject") {
-          moveLeadToRejected(id);
-          renderAll();
-        }
-        if (target.dataset.action === "lead-promote") {
-          moveLeadToAcquisition(id);
-          renderAll();
-        }
-        if (target.dataset.action === "view-lead") {
-          const record = state.records.find(r => r.id === id);
-          if (record) openLeadModal(record);
-        }
-      });
-      document.getElementById("add-lead-btn").addEventListener("click", () => {
-        openLeadModal();
-      });
-      leadModalClose.addEventListener("click", closeLeadModal);
-      leadCancel.addEventListener("click", closeLeadModal);
-      leadForm.addEventListener("submit", event => {
-        event.preventDefault();
-        const existing = editingLeadId ? state.records.find(r => r.id === editingLeadId) : null;
-        let payload = buildLeadFromForm(existing);
-        if (!payload.name || !payload.contact) return;
-        if (editingLeadId) {
-          const stageChanged = existing && existing.stage !== payload.stage;
-          const msg = stageChanged ? `Stage changed ${existing.stage || "lead"} -> ${payload.stage}` : "Lead updated";
-          payload = appendLog(payload, msg);
-          state.records = state.records.map(r => r.id === editingLeadId ? payload : r);
-        } else {
-          payload = appendLog(payload, `Created (stage ${payload.stage})`);
-          state.records = [payload, ...state.records];
-        }
-        closeLeadModal();
-        renderAll();
-      });
-      document.getElementById("import-csv-btn").addEventListener("click", () => {
-        alert("CSV import can be wired to Supabase later.");
-      });
-    }
-
-    function handleAcquisitionEvents() {
-      document.getElementById("acquisition-body").addEventListener("change", event => {
-        const target = event.target;
-        const id = Number(target.dataset.id);
-        if (target.dataset.action === "update-substage") {
-          setSubstage(id, target.dataset.stage);
-          renderAll();
-        }
-      });
-      document.getElementById("acquisition-body").addEventListener("click", event => {
-        const target = event.target;
-        const id = Number(target.dataset.id);
-        if (target.dataset.action === "view-acq") {
-          const record = state.records.find(r => r.id === id);
-          if (record) openLeadModal(record);
-        }
-      });
-      document.getElementById("filter-high-btn").addEventListener("click", () => {
-        renderAcquisition(true);
-      });
-    }
-
-    function handleClientActions() {
-      document.getElementById("retention-body").addEventListener("click", event => {
-        const target = event.target;
-        const id = Number(target.dataset.id);
-        if (!id) return;
-        const record = state.records.find(r => r.id === id);
-        if (!record) return;
-
-        if (target.dataset.action === "view-client") {
-          openLeadModal(record);
-          return;
-        }
-
-        if (target.dataset.action === "add-review") {
-          const note = prompt("Add episode review note");
-          if (!note) return;
-          const retention = record.retention || { reviews: [], testimony: "", renewDate: getDefaultRenewalDate(), nextEpisodeDue: getDefaultEpisodeDueDate(), feedbackStatus: "Not sent" };
-          retention.reviews = [...(retention.reviews || []), note];
-          record.retention = retention;
-        }
-
-        if (target.dataset.action === "add-testimony") {
-          const testimony = prompt("Paste or type the client testimony");
-          if (testimony === null) return;
-          const retention = record.retention || { reviews: [], testimony: "", renewDate: getDefaultRenewalDate(), nextEpisodeDue: getDefaultEpisodeDueDate(), feedbackStatus: "Not sent" };
-          retention.testimony = testimony;
-          record.retention = retention;
-        }
-
-        if (target.dataset.action === "renew-contract") {
-          const date = prompt("Enter renewal date (YYYY-MM-DD)", record.retention && record.retention.renewDate ? record.retention.renewDate : getDefaultRenewalDate());
-          if (!date) return;
-          const retention = record.retention || { reviews: [], testimony: "", renewDate: getDefaultRenewalDate(), nextEpisodeDue: getDefaultEpisodeDueDate(), feedbackStatus: "Not sent" };
-          retention.renewDate = date;
-          retention.lastCheckIn = "Today";
-          record.retention = retention;
-        }
-
-        state.records = state.records.map(r => r.id === id ? record : r);
-        renderAll();
-      });
-      document.getElementById("export-btn").addEventListener("click", () => {
-        alert("Export can later be connected to Supabase or CSV.");
-      });
-    }
-
-    function handleRenewalsActions() {
-      document.getElementById("renewals-body").addEventListener("input", event => {
-        const target = event.target;
-        if (target.dataset.action === "update-next-action") {
-          const id = Number(target.dataset.id);
-          state.records = state.records.map(r => r.id === id ? { ...r, nextAction: target.value } : r);
-        }
-      });
-      document.getElementById("renewals-body").addEventListener("click", event => {
-        const target = event.target;
-        if (target.dataset.action === "view-renewal") {
-          const id = Number(target.dataset.id);
-          const record = state.records.find(r => r.id === id);
-          if (record) openLeadModal(record);
-        }
-      });
-      document.getElementById("next-30-btn").addEventListener("click", () => {
-        renderRenewals(true);
-      });
-      document.getElementById("renewal-calls-btn").addEventListener("click", () => {
-        alert("Renewal calls scheduling can be wired to calendar and Supabase later.");
-      });
-    }
-
-    function handleRejectedEvents() {
-      document.getElementById("rejected-body").addEventListener("click", event => {
-        const target = event.target;
-        if (target.dataset.action === "delete-rejected") {
-          const id = Number(target.dataset.id);
-          state.records = state.records.filter(r => r.id !== id);
-          renderAll();
-        }
-      });
-      document.getElementById("purge-rejected-btn").addEventListener("click", () => {
-        state.records = state.records.filter(r => r.stage !== "rejected");
-        renderAll();
-      });
-    }
-    function renderAll() {
-      renderMetrics();
-      renderDashboard();
-      renderLeads();
-      renderAcquisition();
-      renderRetention();
-      renderRejected();
-      renderRenewals();
-    }
-
-    ensureNav();
-    handleLeadsEvents();
-    handleAcquisitionEvents();
-    handleClientActions();
-    handleRenewalsActions();
-    handleRejectedEvents();
-    renderAll();
-  </script>
-</body>
+    <script type="module" src="./main.js"></script>
+  </body>
 </html>
+
