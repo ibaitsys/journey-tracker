@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>PodTechs Journey MVP</title>
+  <title>PodTechs Journey</title>
   <style>
     :root {
       --accent: #D43D52;
@@ -486,9 +486,9 @@
       </div>
 
       <div class="sidebar-footer">
-        This is an MVP.
+        
         <div class="pill">
-          Manual tracking first
+          
         </div>
       </div>
     </aside>
@@ -549,7 +549,7 @@
           </table>
         </div>
         <p class="section-note">
-          Later you can plug real data here from your database; for now it is a manual snapshot you can glance at.
+          Connect to your database to populate automatically.
         </p>
       </section>
 
@@ -676,7 +676,7 @@
           </table>
         </div>
         <p class="section-note">
-          This view can later be powered by Supabase and send reminders to Slack or email.
+          This view can be powered by Supabase and send reminders to Slack or email.
         </p>
       </section>
 
@@ -704,7 +704,7 @@
             <tbody id="rejected-body"></tbody>
           </table>
         </div>
-        <p class="section-note">Delete removes the record from this MVP. You can restore from Supabase later.</p>
+        <p class="section-note">Delete removes the record. Restore from Supabase if you have a backup.</p>
       </section>
     </main>
   </div>
@@ -790,70 +790,7 @@
     const supabaseClient = (window.supabase && window.supabase.createClient) ? window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY) : null;
 
     const substages = ["FIRST CONTACT", "FIRST MEETING", "TRAILER SENT", "FIRST EPISODE DELIVERED"];
-    const state = { records: [
-      {
-        id: 1,
-        name: "The Home Expo Podcast - SonomaNorthBayHomeExpo.com",
-        contact: "dustin@example.com / +1 (555) 111-2222",
-        contactEmail: "dustin@example.com",
-        contactPhone: "+1 (555) 111-2222",
-        type: "Referral",
-        stage: "retention",
-        substage: "FIRST EPISODE DELIVERED",
-        serviceInterest: "Full production ? Clips",
-        priority: "High",
-        lastTouch: "This week",
-        nextStep: "Prep renewal proposal",
-        owner: "Dustin",
-        channel: "Email",
-        retention: {
-          reviews: ["Episode 1 approved", "Episode 2 needs tweaks"],
-          testimony: "Great partner so far!",
-          renewDate: "2026-02-15",
-          contractValue: ",000 / year",
-          renewalProbability: "High (9/10)",
-          lastCheckIn: "Last week",
-          nextEpisodeDue: "2026-01-10",
-          feedbackStatus: "Sent to client"
-        },
-        history: []
-      },
-      {
-        id: 2,
-        name: "Ric Mims",
-        contact: "ric@example.com / +1 (555) 333-4444",
-        contactEmail: "ric@example.com",
-        contactPhone: "+1 (555) 333-4444",
-        type: "LinkedIn",
-        stage: "lead",
-        substage: null,
-        serviceInterest: "Podcast launch",
-        priority: "Medium",
-        lastTouch: "Not contacted",
-        nextStep: "Draft first outreach",
-        owner: "Rodrigo",
-        channel: "LinkedIn",
-        history: []
-      },
-      {
-        id: 3,
-        name: "Sorelle Wealth Partners",
-        contact: "info@sorellewealth.com / +1 (555) 777-8888",
-        contactEmail: "info@sorellewealth.com",
-        contactPhone: "+1 (555) 777-8888",
-        type: "Referral",
-        stage: "acquisition",
-        substage: "FIRST CONTACT",
-        serviceInterest: "Podcast revamp",
-        priority: "High",
-        lastTouch: "Today",
-        nextStep: "Book first meeting",
-        owner: "Dustin",
-        channel: "Email",
-        meetingDate: "2025-11-25",
-        history: []
-      }
-    ] };
+    const state = { records: [] };
 
     const leadModal = document.getElementById("lead-modal");
     const leadForm = document.getElementById("lead-form");
@@ -1402,7 +1339,7 @@
         renderAll();
       });
       document.getElementById("export-btn").addEventListener("click", () => {
-        alert("Export can later be connected to Supabase or CSV.");
+        alert("Export can be connected to Supabase or CSV.");
       });
     }
 
@@ -1465,6 +1402,8 @@
   </script>
 </body>
 </html>
+
+
 
 
 
