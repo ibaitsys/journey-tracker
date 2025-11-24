@@ -658,5 +658,22 @@
   </div>
 
   <script type="module" src="./main.js"></script>
+  <script>
+    document.addEventListener('"'"'DOMContentLoaded'"'"', () => {
+      const navButtons = document.querySelectorAll('.nav-btn');
+      const sections = document.querySelectorAll('.section');
+      navButtons.forEach((btn) => {
+        btn.addEventListener('"'"'click'"'"', () => {
+          const target = btn.getAttribute('"'"'data-target'"'"');
+          navButtons.forEach((b) => b.classList.remove('"'"'active'"'"'));
+          btn.classList.add('"'"'active'"'"');
+          sections.forEach((section) => {
+            section.classList.toggle('"'"'active'"'"', section.id === target);
+          });
+        });
+      });
+    });
+  </script>
 </body>
 </html>
+
