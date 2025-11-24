@@ -2,7 +2,7 @@ name: Twine to Supabase
 
 on:
   schedule:
-    - cron: "0 * * * *" # hourly; adjust as needed
+    - cron: "0 */12 * * *" # hourly; adjust as needed
   workflow_dispatch: {}
 
 jobs:
@@ -31,3 +31,4 @@ jobs:
           TWINE_URL: ${{ secrets.TWINE_URL }}
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
         run: python .github/scripts/twine_to_supabase.py
+
