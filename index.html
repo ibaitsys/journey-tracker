@@ -848,6 +848,10 @@
     }
 
     async function saveLeadToSupabase(payload, id) {
+      if (!supabaseClient) {
+        console.warn("Supabase client not available; lead stays local only.");
+        return;
+      }
       const body = {
         company: payload.name,
         contact_info: payload.contactEmail || payload.contact || null,
@@ -1418,6 +1422,7 @@
   </script>
 </body>
 </html>
+
 
 
 
