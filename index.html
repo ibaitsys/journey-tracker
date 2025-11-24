@@ -787,7 +787,7 @@
   <script>
     const SUPABASE_URL = "https://vtnqqjescpebrjmxaacp.supabase.co";
     const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZ0bnFxamVzY3BlYnJqbXhhYWNwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjQwMDY3NTksImV4cCI6MjA3OTU4Mjc1OX0.rHMS746OF3UKdG5SRud03RkCgp2iWlG49dvcVAOJNLo";
-    const supabaseClient = window.supabase ? window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY) : null;
+    const supabaseClient = (window.supabase && window.supabase.createClient) ? window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY) : null;
 
     const substages = ["FIRST CONTACT", "FIRST MEETING", "TRAILER SENT", "FIRST EPISODE DELIVERED"];
     const state = { records: [
@@ -1321,11 +1321,11 @@
         } else {
           if (editingLeadId) {
             const stageChanged = existing && existing.stage !== payload.stage;
-            const msg = stageChanged ? Stage changed  ->  : "Lead updated";
+            const msg = stageChanged ? `Stage changed ${existing.stage || "lead"} -> ${payload.stage}` : "Lead updated";
             payload = appendLog(payload, msg);
             state.records = state.records.map(r => idsMatch(r.id, editingLeadId) ? payload : r);
           } else {
-            payload = appendLog(payload, Created (stage ));
+            payload = appendLog(payload, `Created (stage ${payload.stage})`);
             state.records = [payload, ...state.records];
           }
         }
@@ -1465,6 +1465,8 @@
   </script>
 </body>
 </html>
+
+
 
 
 
