@@ -18,13 +18,14 @@
     const isSupabaseId = (id) => typeof id === "string";
     const STORAGE_KEY = "podtechs_journey_state_v1";
     let editingLeadId = null;
+    let draftHistory = [];
 
     async function fetchSupabaseLeads() {
       if (!supabaseClient) return [];
       try {
         const { data, error } = await supabaseClient
           .from("leads")
-          .select("id, company, contact_info, source, priority, last_touch, next_step, created_at")
+          .select("id, company, contact_info, source, priority, last_touch, next_step, history, created_at")
           .order("created_at", { ascending: false });
         if (error) {
           console.error("Supabase fetch error", error);
@@ -56,7 +57,7 @@
         owner: "Unassigned",
         channel: row.source || "N/A",
         retention: null,
-        history: [],
+        history: row.history || [],
         createdAt: row.created_at
       };
     }
@@ -72,7 +73,8 @@
         source: payload.type || null,
         priority: (payload.priority || "Medium").toLowerCase(),
         last_touch: payload.lastTouch || null,
-        next_step: payload.nextStep || null
+        next_step: payload.nextStep || null,
+        history: payload.history || []
       };
       const query = supabaseClient.from("leads");
       const { error } = id ? await query.update(body).eq("id", id) : await query.insert(body);
@@ -125,6 +127,35 @@
       }
     }
 
+    function handleHistoryQuickAdd() {
+      const btn = document.getElementById("lead-history-add");
+      if (!btn) return;
+      btn.addEventListener("click", async () => {
+        const note = prompt("Add a history note");
+        if (!note || !note.trim()) return;
+        const entry = { at: new Date().toLocaleString(), message: note.trim() };
+        draftHistory = [...draftHistory, entry];
+        if (editingLeadId) {
+          const existing = state.records.find(r => idsMatch(r.id, editingLeadId));
+          if (existing) {
+            const updated = { ...existing, history: draftHistory };
+            state.records = state.records.map(r => idsMatch(r.id, editingLeadId) ? updated : r);
+            saveState();
+            const isSupabaseLead = typeof existing.id === "string";
+            if (isSupabaseLead) {
+              try {
+                await saveLeadToSupabase(updated, existing.id);
+              } catch (err) {
+                console.error("Failed to persist history to Supabase", err);
+              }
+            }
+          }
+        }
+        saveState();
+        renderHistory({ history: draftHistory });
+      });
+    }
+
     function renderHistory(record) {
       const history = record && record.history ? record.history : [];
       if (!history.length) {
@@ -154,6 +185,7 @@
       leadPriority.value = "Medium";
       leadStage.value = "lead";
       editingLeadId = record ? record.id : null;
+      draftHistory = record && record.history ? [...record.history] : [];
       const titleStage = record && record.stage ? record.stage : "lead";
       const prettyStage = titleStage.charAt(0).toUpperCase() + titleStage.slice(1);
       leadModalTitle.textContent = record ? `View / Edit ${prettyStage}` : "Add lead";
@@ -169,13 +201,14 @@
         leadPriority.value = record.priority || "Medium";
         leadStage.value = record.stage || "lead";
       }
-      renderHistory(record || { history: [] });
+      renderHistory({ history: draftHistory });
       leadModal.classList.add("active");
     }
 
     function closeLeadModal() {
       leadModal.classList.remove("active");
       editingLeadId = null;
+      draftHistory = [];
       renderHistory({ history: [] });
     }
 
@@ -208,8 +241,8 @@
         nextStep,
         owner: base.owner || "Unassigned",
         channel: source,
-        retention: stage === "retention" ? retentionData : base.retention,
-        history: base.history || []
+        retention: stage === "retention" ? retentionData : null,
+        history: draftHistory.length ? draftHistory : base.history || []
       };
     }
 
@@ -279,7 +312,7 @@
             <div class="section-actions">
               <button class="btn btn-primary" data-action="lead-promote" data-id="${lead.id}">Promote</button>
               <button class="btn" data-action="lead-reject" data-id="${lead.id}">Reject</button>
-              <button class="btn" data-action="view-lead" data-id="${lead.id}">View / Edit</button>
+              <button class="btn view-edit" data-action="view-lead" data-id="${lead.id}">View / Edit</button>
             </div>
           </td>
         `;
@@ -314,7 +347,7 @@
           <td>${prospect.lastTouch || "N/A"}</td>
           <td>${prospect.nextAction || "Set next action"}</td>
           <td>${prospect.meetingDate || "Not set"}</td>
-          <td><button class="btn" data-action="view-acq" data-id="${prospect.id}">View / Edit</button></td>
+          <td><button class="btn view-edit" data-action="view-acq" data-id="${prospect.id}">View / Edit</button></td>
         `;
         tbody.appendChild(row);
       });
@@ -336,8 +369,9 @@
           <td>${client.nextAction || client.lastTouch || "Add a note"}</td>
           <td>
             <div class="section-actions">
-              <button class="btn btn-primary" data-action="view-client" data-id="${client.id}">Actions Dashboard</button>
-            </div>
+              <button class="btn view-edit" data-action="view-client" data-id="${client.id}">View / Edit</button>
+            </div>
+
           </td>
         `;
         tbody.appendChild(row);
@@ -394,8 +428,11 @@
     function setSubstage(id, stage) {
       state.records = state.records.map(record => {
         if (idsMatch(record.id, id)) {
+          if (record.substage === stage) {
+            return record;
+          }
           if (stage === "FIRST EPISODE DELIVERED") {
-            return {
+            const nextRecord = {
               ...record,
               stage: "retention",
               substage: "FIRST EPISODE DELIVERED",
@@ -409,8 +446,10 @@
               },
               nextAction: "Kick off retention"
             };
+            return appendLog(nextRecord, `Substage set to ${stage}`);
           }
-          return { ...record, stage: "acquisition", substage: stage };
+          const nextRecord = { ...record, stage: "acquisition", substage: stage };
+          return appendLog(nextRecord, `Substage set to ${stage}`);
         }
         return record;
       });
@@ -453,8 +492,8 @@
         if (target.dataset.action === "lead-reject") {
           moveLeadToRejected(id);
           renderAll();
+          return;
         }
-        
         if (target.dataset.action === "view-lead") {
           const record = state.records.find(r => idsMatch(r.id, id));
           if (record) openLeadModal(record);
@@ -502,10 +541,7 @@
         closeLeadModal();
         renderAll();
       });
-      document.getElementById("import-csv-btn").addEventListener("click", () => {
-        alert("CSV import can be wired to Supabase later.");
-      });
-    }
+      }
 
     function handleAcquisitionEvents() {
       document.getElementById("acquisition-body").addEventListener("change", event => {
@@ -524,10 +560,7 @@
           if (record) openLeadModal(record);
         }
       });
-      document.getElementById("filter-high-btn").addEventListener("click", () => {
-        renderAcquisition(true);
-      });
-    }
+      }
 
     function handleClientActions() {
       document.getElementById("retention-body").addEventListener("click", event => {
@@ -570,10 +603,7 @@
         state.records = state.records.map(r => idsMatch(r.id, id) ? record : r);
         renderAll();
       });
-      document.getElementById("export-btn").addEventListener("click", () => {
-        alert("Export can be connected to Supabase or CSV.");
-      });
-    }    function handleRejectedEvents() {
+      }    function handleRejectedEvents() {
       document.getElementById("rejected-body").addEventListener("click", event => {
         const target = event.target;
         if (target.dataset.action === "delete-rejected") {
@@ -603,9 +633,36 @@
     handleAcquisitionEvents();
     handleClientActions();
     handleRejectedEvents();
+    handleHistoryQuickAdd();
     loadState();
     renderAll();
     syncSupabaseLeads();
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

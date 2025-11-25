@@ -157,7 +157,7 @@
       color: var(--text-muted);
       border-radius: 999px;
       border: 1px solid var(--border);
-      padding: 4px 10px;
+      padding: 3px 10px;
     }
 
     .cards-row {
@@ -223,12 +223,18 @@
     }
 
     .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
       border-radius: 999px;
       border: 1px solid var(--border);
-      background: var(--bg-main);
-      font-size: 0.8rem;
-      padding: 5px 10px;
+      background: var(--bg-soft);
+      font-size: 0.78rem;
+      padding: 3px 10px;
       cursor: pointer;
+      min-height: 24px;
+      line-height: 1;
+      transition: background 0.15s ease, border-color 0.15s ease;
     }
 
     .btn-primary {
@@ -429,6 +435,15 @@
     }
 
     @media (max-width: 840px) {
+      /* hide less important columns on small screens */
+      #leads th:nth-child(6), #leads td:nth-child(6),
+      #leads th:nth-child(7), #leads td:nth-child(7) {
+        display: none;
+      }
+      #acquisition th:nth-child(4), #acquisition td:nth-child(4),
+      #acquisition th:nth-child(5), #acquisition td:nth-child(5) {
+        display: none;
+      }
       .layout {
         grid-template-columns: 1fr;
       }
@@ -441,3 +456,13 @@
       }
     }
     .nav button svg { stroke: #d43d52; width: 18px; height: 18px; }
+
+
+
+
+
+
+
+
+
+    .btn.view-edit {\n      background: #111827;\n      border-color: #111827;\n      color: #ffffff;\n    }\n\n    .btn.view-edit:hover {\n      background: #4b5563;\n      border-color: #4b5563;\n      color: #ffffff;\n    }\n

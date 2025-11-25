@@ -104,7 +104,6 @@
             <small>Raw leads before they respond - top of funnel.</small>
           </div>
           <div class="section-actions">
-            <button class="btn" id="import-csv-btn">Import CSV</button>
             <button class="btn btn-primary" id="add-lead-btn">+ Add lead</button>
           </div>
         </div>
@@ -120,15 +119,12 @@
                 <th>Last touch</th>
                 <th>Next step</th>
                 <th>Actions</th>
-                <th>Reject</th>
-              </tr>
+                </tr>
             </thead>
             <tbody id="leads-body"></tbody>
           </table>
         </div>
-        <p class="section-note">
-          Checking move to acquisition starts the 3 stage acquisition flow.
-        </p>
+        
       </section>
       <section id="acquisition" class="section">
         <div class="section-header">
@@ -136,9 +132,7 @@
             <h2>Acquisition</h2>
             <small>Leads who replied and are in active conversation.</small>
           </div>
-          <div class="section-actions">
-            <button class="btn" id="filter-high-btn">View high priority</button>
-          </div>
+          
         </div>
         <div class="table-wrapper">
           <table>
@@ -167,9 +161,7 @@
             <h2>Retention</h2>
             <small>Active paying retention with ongoing production.</small>
           </div>
-          <div class="section-actions">
-            <button class="btn" id="export-btn">Export</button>
-          </div>
+          
         </div>
         <div class="table-wrapper">
           <table>
@@ -286,6 +278,7 @@
           <div class="field" style="grid-column: 1 / -1;">
             <label>History</label>
             <div id="lead-history" class="section-note" style="max-height: 140px; overflow:auto; border:1px solid var(--border); border-radius:8px; padding:8px; background: var(--bg-soft);"></div>
+            <button type="button" class="btn" id="lead-history-add">Add +</button>
           </div>
         </div>
         <footer>
@@ -301,6 +294,13 @@
   <script src="main.js"></script>
 </body>
 </html>
+
+
+
+
+
+
+
 
 
 
