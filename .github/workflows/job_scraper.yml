@@ -1,12 +1,12 @@
-name: Twine to Supabase
+name: Job Scraper (Twine & LinkedIn)
 
 on:
   schedule:
-    - cron: "0 */12 * * *" # hourly; adjust as needed
+    - cron: "0 */12 * * *" # Runs every 12 hours
   workflow_dispatch: {}
 
 jobs:
-  scrape-and-insert:
+  scrape-jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
@@ -24,7 +24,7 @@ jobs:
           pip install playwright==1.45.0 requests supabase
           playwright install chromium
 
-      - name: Run Twine scraper copy -> Supabase
+      - name: Run Twine Scraper
         env:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
@@ -32,3 +32,10 @@ jobs:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
         run: python .github/scripts/twine_to_supabase.py
 
+      - name: Run LinkedIn Scraper
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          LINKEDIN_URL: ${{ secrets.LINKEDIN_URL }}
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+        run: python .github/scripts/linkedin_to_supabase.py
