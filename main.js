@@ -17,8 +17,18 @@
     const idsMatch = (a, b) => String(a) === String(b);
     const isSupabaseId = (id) => typeof id === "string";
     const STORAGE_KEY = "podtechs_journey_state_v1";
+    const MIGRATION_KEY = "podtechs_migration_v2_posted_date";
     let editingLeadId = null;
     let draftHistory = [];
+
+    function checkMigration() {
+      const hasMigrated = window.localStorage.getItem(MIGRATION_KEY);
+      if (!hasMigrated) {
+        console.log("Applying one-time migration: Clearing old local state.");
+        window.localStorage.removeItem(STORAGE_KEY);
+        window.localStorage.setItem(MIGRATION_KEY, "true");
+      }
+    }
 
     async function fetchSupabaseLeads() {
       if (!supabaseClient) return [];
@@ -660,6 +670,7 @@
     handleClientActions();
     handleRejectedEvents();
     handleHistoryQuickAdd();
+    checkMigration();
     loadState();
     renderAll();
     syncSupabaseLeads();
