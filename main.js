@@ -26,7 +26,7 @@
         const { data, error } = await supabaseClient
           .from("leads")
           .select("id, company, contact_info, source, posted_at, priority, last_touch, next_step, history, created_at")
-          .order("created_at", { ascending: false });
+          .order("posted_at", { ascending: false });
         if (error) {
           console.error("Supabase fetch error", error);
           return [];
