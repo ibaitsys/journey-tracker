@@ -1,15 +1,3 @@
-"""
-Lightweight copy of the Twine scraper that writes new jobs into Supabase leads.
-Existing scraper remains untouched. This version is meant to be run in CI (GitHub Actions).
-
-Environment variables required:
-  SUPABASE_URL
-  SUPABASE_SERVICE_ROLE_KEY
-Optional:
-  TWINE_URL (override default Twine search URL)
-  SLACK_WEBHOOK_URL (if you still want Slack alerts)
-"""
-
 import os
 import re
 import time
@@ -243,35 +231,3 @@ def insert_leads(supabase: Client, jobs: List[dict]) -> None:
         print(f"Inserted {len(rows)} leads into Supabase.")
     except Exception as exc:  # noqa: BLE001
         print(f"Supabase insert failed: {exc}")
-
-
-def main() -> None:
-    twine_url = env("TWINE_URL", DEFAULT_TWINE_URL)
-    print("--- Twine -> Supabase scraper (CI copy) ---")
-    print(f"[{time.ctime()}] Checking Twine URL: {twine_url}")
-
-    supabase = create_supabase()
-    known_urls = fetch_existing_twine_urls(supabase)
-
-    new_jobs: List[dict] = []
-    try:
-        with sync_playwright() as p:
-            browser = p.chromium.launch(headless=True)
-            page = browser.new_page()
-            page.goto(twine_url, wait_until="domcontentloaded", timeout=60000)
-            handle_cookies(page)
-            new_jobs = find_new_jobs(page, known_urls)
-            browser.close()
-    except Exception as exc:  # noqa: BLE001
-        print(f"Unexpected error during scraping: {exc}")
-
-    if new_jobs:
-        insert_leads(supabase, new_jobs)
-        for job in new_jobs:
-            send_slack_notification(job["title"], job["url"])
-    else:
-        print("No new jobs to insert.")
-
-
-if __name__ == "__main__":
-    main()

@@ -13,7 +13,9 @@ Optional:
 import os
 import time
 import random
-from typing import List, Set
+import re
+from datetime import datetime, timedelta
+from typing import List, Set, Optional
 
 import requests
 from playwright.sync_api import TimeoutError, sync_playwright
@@ -83,6 +85,53 @@ def send_slack_notification(job_title: str, job_url: str) -> None:
     except requests.RequestException as exc:
         print(f"Slack error: {exc}")
 
+def parse_date_to_iso(date_str: str) -> Optional[str]:
+    """Converts relative date strings like '2 days ago' to ISO format."""
+    if not date_str or date_str == "N/A":
+        return None
+    
+    now = datetime.now()
+    date_str = date_str.lower().strip()
+    
+    # Regex for "2 days ago", "1 week ago", "3 hours ago"
+    match = re.search(r"(\d+)\s+(day|week|month|hour|minute)s?\s+ago", date_str)
+    if match:
+        amount = int(match.group(1))
+        unit = match.group(2)
+        
+        if unit == "minute":
+            delta = timedelta(minutes=amount)
+        elif unit == "hour":
+            delta = timedelta(hours=amount)
+        elif unit == "day":
+            delta = timedelta(days=amount)
+        elif unit == "week":
+            delta = timedelta(weeks=amount)
+        elif unit == "month":
+            delta = timedelta(days=amount * 30) # Approx
+        else:
+            delta = timedelta(0)
+            
+        return (now - delta).isoformat()
+
+    # Regex for "2d ago", "1w ago"
+    match = re.search(r"(\d+)([dwhm])\s+ago", date_str)
+    if match:
+        amount = int(match.group(1))
+        unit = match.group(2)
+        if unit == "d":
+            delta = timedelta(days=amount)
+        elif unit == "w":
+            delta = timedelta(weeks=amount)
+        elif unit == "h":
+            delta = timedelta(hours=amount)
+        elif unit == "m":
+            delta = timedelta(minutes=amount)
+        else:
+            delta = timedelta(0)
+        return (now - delta).isoformat()
+
+    return None
 
 def find_new_jobs(page, known_urls: Set[str]) -> List[dict]:
     print("Scrolling page to load jobs...")
@@ -132,6 +181,10 @@ def find_new_jobs(page, known_urls: Set[str]) -> List[dict]:
             company_el = card.query_selector(".base-search-card__subtitle")
             company = company_el.text_content().strip() if company_el else "Unknown Company"
             
+            # Date
+            date_el = card.query_selector("time")
+            posted_date = date_el.text_content().strip() if date_el else "N/A"
+
             # Filter by keywords (optional double-check)
             search_text = f"{job_title} {company}".lower()
             # If strict filtering is needed:
@@ -141,7 +194,8 @@ def find_new_jobs(page, known_urls: Set[str]) -> List[dict]:
             new_jobs.append({
                 "title": job_title,
                 "company": company,
-                "url": job_url
+                "url": job_url,
+                "posted_date": posted_date
             })
             known_urls.add(job_url) # Prevent duplicates in same run
 
@@ -168,6 +222,7 @@ def insert_leads(supabase: Client, jobs: List[dict]) -> None:
                 "last_touch": "Not contacted",
                 "next_step": f"Review: {job['title']}",
                 "created_at": now_str,
+                "posted_at": parse_date_to_iso(job.get("posted_date"))
             }
         )
     try:
