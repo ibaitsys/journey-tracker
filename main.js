@@ -25,7 +25,7 @@
       try {
         const { data, error } = await supabaseClient
           .from("leads")
-          .select("id, company, contact_info, source, priority, last_touch, next_step, history, created_at")
+          .select("id, company, contact_info, source, posted_at, priority, last_touch, next_step, history, created_at")
           .order("created_at", { ascending: false });
         if (error) {
           console.error("Supabase fetch error", error);
@@ -44,6 +44,7 @@
       return {
         id: row.id,
         name: row.company || "Untitled lead",
+        postedAt: row.posted_at || "N/A",
         contact: row.contact_info || "N/A",
         contactEmail: row.contact_info || "",
         contactPhone: "",
@@ -302,6 +303,7 @@
         const priorityClass = lead.priority === "High" ? "tag-green" : lead.priority === "Medium" ? "tag-yellow" : "";
         row.innerHTML = `
           <td>${lead.type}</td>
+          <td>${lead.postedAt}</td>
           <td>${lead.name}</td>
           <td>${lead.contact}</td>
           <td>${lead.serviceInterest || "N/A"}</td>

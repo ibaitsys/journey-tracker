@@ -146,7 +146,27 @@ def find_new_jobs(page, known_urls: Set[str]) -> List[dict]:
         if full_url in known_urls:
             continue
 
-        new_jobs.append({"title": job_title, "url": full_url})
+        # Date scraping (heuristic: looking for "Posted" or "ago")
+        # We look at the link element's text or potentially a nearby element if structure allows.
+        # Twine's structure is dynamic, but often text like "Posted 2 days ago" is inside the link card.
+        link_text = link_element.text_content().strip()
+        posted_date = "N/A"
+        
+        # Try to extract "Posted X days ago" or similar
+        match = re.search(r"(Posted\s+.*?ago|.*?ago)", link_text, re.IGNORECASE)
+        if match:
+            posted_date = match.group(1).strip()
+        else:
+            # Fallback: sometimes date is just "2d ago"
+             match = re.search(r"(\d+[dhwm]\s+ago)", link_text, re.IGNORECASE)
+             if match:
+                 posted_date = match.group(1).strip()
+
+        new_jobs.append({
+            "title": job_title,
+            "url": full_url,
+            "posted_date": posted_date
+        })
 
     print(f"New jobs found this run: {len(new_jobs)}")
     return new_jobs
@@ -167,6 +187,7 @@ def insert_leads(supabase: Client, jobs: List[dict]) -> None:
                 "last_touch": "Not contacted",
                 "next_step": "Review Twine lead",
                 "created_at": now_str,
+                "posted_at": job.get("posted_date", "N/A")
             }
         )
     try:
