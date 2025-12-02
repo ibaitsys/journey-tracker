@@ -263,6 +263,30 @@
       return '<span class="tag">Lead</span>';
     }
 
+    function formatRelativeTime(isoString) {
+      if (!isoString || isoString === "N/A") return "N/A";
+      try {
+        const date = new Date(isoString);
+        const now = new Date();
+        const seconds = Math.floor((now - date) / 1000);
+
+        let interval = seconds / 31536000;
+        if (interval > 1) return Math.floor(interval) + " years ago";
+        interval = seconds / 2592000;
+        if (interval > 1) return Math.floor(interval) + " months ago";
+        interval = seconds / 86400;
+        if (interval > 1) return Math.floor(interval) + " days ago";
+        interval = seconds / 3600;
+        if (interval > 1) return Math.floor(interval) + " hours ago";
+        interval = seconds / 60;
+        if (interval > 1) return Math.floor(interval) + " minutes ago";
+        return Math.floor(seconds) + " seconds ago";
+      } catch (e) {
+        console.error("Error formatting date:", e);
+        return "Invalid Date";
+      }
+    }
+
     function renderMetrics() {
       const leadsCount = state.records.filter(r => r.stage === "lead").length;
       const acquisitionCount = state.records.filter(r => r.stage === "acquisition").length;
@@ -303,7 +327,7 @@
         const priorityClass = lead.priority === "High" ? "tag-green" : lead.priority === "Medium" ? "tag-yellow" : "";
         row.innerHTML = `
           <td>${lead.type}</td>
-          <td>${lead.postedAt}</td>
+          <td>${formatRelativeTime(lead.postedAt)}</td>
           <td>${lead.name}</td>
           <td>${lead.contact}</td>
           <td>${lead.serviceInterest || "N/A"}</td>
