@@ -10,9 +10,7 @@ from supabase import Client, create_client
 
 
 DEFAULT_TWINE_URL = (
-    "https://www.twine.net/jobs/in/united-states?"
-    "roles=Podcast%20Producer&roles=Podcast%20Editor&roles=Video%20Editor&roles=Sound%20Editor"
-    "&rolesHaveChanged=1&searchTerm=Podcast%2C%20Youtube"
+    "https://www.twine.net/jobs?remote=1&searchTerm=podcast&status=true"
 )
 
 JOB_KEYWORDS = [
