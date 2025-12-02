@@ -100,9 +100,12 @@ def parse_date_to_iso(date_str: str) -> Optional[str]:
         return None
     
     now = datetime.now()
+    # Normalize "a month" -> "1 month", "an hour" -> "1 hour"
     date_str = date_str.lower().strip()
+    date_str = re.sub(r"\b(a|an)\s+", "1 ", date_str)
     
     # Regex for "2 days ago", "1 week ago", "3 hours ago", "30 mins ago"
+    # Added ^...$ anchors or length check to avoid parsing long sentences
     match = re.search(r"(\d+)\s+(day|week|month|hour|minute|min)s?\s+ago", date_str)
     if match:
         amount = int(match.group(1))
@@ -156,13 +159,16 @@ def scrape_job_details(page, job_url: str) -> str:
         # Common patterns on Twine details page: "Posted 2 days ago", "Posted on..."
         body_text = page.query_selector("body").text_content()
         
-        # Regex for "Posted X days ago"
-        match = re.search(r"(Posted\s+.*?ago)", body_text, re.IGNORECASE)
+        # Regex for "Posted X days ago" - STRICTER
+        # Only match if it's a reasonable length (e.g. < 30 chars) to avoid grabbing page text
+        # We look for "Posted" followed by digits or "a/an", then units, then "ago"
+        match = re.search(r"(Posted\s+(?:a|an|\d+)\s+\w+\s+ago)", body_text, re.IGNORECASE)
         if match:
             return match.group(1).strip()
             
         # Regex for simple "2d ago" style if "Posted" is missing
-        match = re.search(r"(\d+[dhwm]\s+ago)", body_text, re.IGNORECASE)
+        # \b ensures we don't match inside other words
+        match = re.search(r"\b(\d+[dhwm]\s+ago)", body_text, re.IGNORECASE)
         if match:
             return match.group(1).strip()
             
