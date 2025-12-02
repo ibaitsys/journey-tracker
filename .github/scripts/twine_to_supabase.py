@@ -102,13 +102,13 @@ def parse_date_to_iso(date_str: str) -> Optional[str]:
     now = datetime.now()
     date_str = date_str.lower().strip()
     
-    # Regex for "2 days ago", "1 week ago", "3 hours ago"
-    match = re.search(r"(\d+)\s+(day|week|month|hour|minute)s?\s+ago", date_str)
+    # Regex for "2 days ago", "1 week ago", "3 hours ago", "30 mins ago"
+    match = re.search(r"(\d+)\s+(day|week|month|hour|minute|min)s?\s+ago", date_str)
     if match:
         amount = int(match.group(1))
         unit = match.group(2)
         
-        if unit == "minute":
+        if unit in ("minute", "min"):
             delta = timedelta(minutes=amount)
         elif unit == "hour":
             delta = timedelta(hours=amount)
@@ -123,7 +123,7 @@ def parse_date_to_iso(date_str: str) -> Optional[str]:
             
         return (now - delta).isoformat()
 
-    # Regex for "2d ago", "1w ago"
+    # Regex for "2d ago", "1w ago", "5m ago"
     match = re.search(r"(\d+)([dwhm])\s+ago", date_str)
     if match:
         amount = int(match.group(1))
@@ -210,6 +210,9 @@ def find_new_jobs(page, known_urls: Set[str], known_titles: Set[str]) -> List[di
              match = re.search(r"(\d+[dhwm]\s+ago)", link_text, re.IGNORECASE)
              if match:
                  posted_date_str = match.group(1).strip()
+        
+        if posted_date_str == "N/A":
+             print(f"DEBUG: Date not found in text: '{link_text[:50]}...'")
 
         new_jobs.append({
             "title": job_title,
