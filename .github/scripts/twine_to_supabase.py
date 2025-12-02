@@ -277,3 +277,7 @@ def main() -> None:
             send_slack_notification(job["title"], job["url"])
     else:
         print("No new jobs to insert.")
+
+
+if __name__ == "__main__":
+    main()
