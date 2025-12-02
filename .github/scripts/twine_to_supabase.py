@@ -203,6 +203,13 @@ def find_new_jobs(page, known_urls: Set[str], known_titles: Set[str]) -> List[di
              if match:
                  posted_date_str = match.group(1).strip()
 
+        # Check if job is within last 5 days
+        iso_date = parse_date_to_iso(posted_date_str)
+        if iso_date:
+             job_dt = datetime.fromisoformat(iso_date)
+             if datetime.now() - job_dt > timedelta(days=5):
+                 continue
+
         new_jobs.append({
             "title": job_title,
             "url": full_url,
