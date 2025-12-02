@@ -13,7 +13,8 @@ Optional:
 import os
 import re
 import time
-from typing import List, Set
+from datetime import datetime, timedelta
+from typing import List, Set, Optional
 
 import requests
 from playwright.sync_api import TimeoutError, sync_playwright
@@ -96,6 +97,55 @@ def handle_cookies(page) -> None:
         print(f"Cookie modal handling failed: {exc}")
 
 
+def parse_date_to_iso(date_str: str) -> Optional[str]:
+    """Converts relative date strings like '2 days ago' to ISO format."""
+    if not date_str or date_str == "N/A":
+        return None
+    
+    now = datetime.now()
+    date_str = date_str.lower().strip()
+    
+    # Regex for "2 days ago", "1 week ago", "3 hours ago"
+    match = re.search(r"(\d+)\s+(day|week|month|hour|minute)s?\s+ago", date_str)
+    if match:
+        amount = int(match.group(1))
+        unit = match.group(2)
+        
+        if unit == "minute":
+            delta = timedelta(minutes=amount)
+        elif unit == "hour":
+            delta = timedelta(hours=amount)
+        elif unit == "day":
+            delta = timedelta(days=amount)
+        elif unit == "week":
+            delta = timedelta(weeks=amount)
+        elif unit == "month":
+            delta = timedelta(days=amount * 30) # Approx
+        else:
+            delta = timedelta(0)
+            
+        return (now - delta).isoformat()
+
+    # Regex for "2d ago", "1w ago"
+    match = re.search(r"(\d+)([dwhm])\s+ago", date_str)
+    if match:
+        amount = int(match.group(1))
+        unit = match.group(2)
+        if unit == "d":
+            delta = timedelta(days=amount)
+        elif unit == "w":
+            delta = timedelta(weeks=amount)
+        elif unit == "h":
+            delta = timedelta(hours=amount)
+        elif unit == "m":
+            delta = timedelta(minutes=amount)
+        else:
+            delta = timedelta(0)
+        return (now - delta).isoformat()
+
+    return None
+
+
 def find_new_jobs(page, known_urls: Set[str]) -> List[dict]:
     print("Scrolling page to load jobs...")
     for _ in range(5):
@@ -147,25 +197,23 @@ def find_new_jobs(page, known_urls: Set[str]) -> List[dict]:
             continue
 
         # Date scraping (heuristic: looking for "Posted" or "ago")
-        # We look at the link element's text or potentially a nearby element if structure allows.
-        # Twine's structure is dynamic, but often text like "Posted 2 days ago" is inside the link card.
         link_text = link_element.text_content().strip()
-        posted_date = "N/A"
+        posted_date_str = "N/A"
         
         # Try to extract "Posted X days ago" or similar
         match = re.search(r"(Posted\s+.*?ago|.*?ago)", link_text, re.IGNORECASE)
         if match:
-            posted_date = match.group(1).strip()
+            posted_date_str = match.group(1).strip()
         else:
             # Fallback: sometimes date is just "2d ago"
              match = re.search(r"(\d+[dhwm]\s+ago)", link_text, re.IGNORECASE)
              if match:
-                 posted_date = match.group(1).strip()
+                 posted_date_str = match.group(1).strip()
 
         new_jobs.append({
             "title": job_title,
             "url": full_url,
-            "posted_date": posted_date
+            "posted_date_raw": posted_date_str
         })
 
     print(f"New jobs found this run: {len(new_jobs)}")
@@ -187,7 +235,7 @@ def insert_leads(supabase: Client, jobs: List[dict]) -> None:
                 "last_touch": "Not contacted",
                 "next_step": "Review Twine lead",
                 "created_at": now_str,
-                "posted_at": job.get("posted_date", "N/A")
+                "posted_at": parse_date_to_iso(job.get("posted_date_raw"))
             }
         )
     try:
