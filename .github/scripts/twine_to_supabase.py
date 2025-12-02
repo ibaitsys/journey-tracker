@@ -197,22 +197,41 @@ def find_new_jobs(page, known_urls: Set[str], known_titles: Set[str]) -> List[di
             # print(f"DEBUG: Skipped duplicate URL: {full_url}")
             continue
 
-        # Date scraping (heuristic: looking for "Posted" or "ago")
-        link_text = link_element.text_content().strip()
-        posted_date_str = "N/A"
-        
-        # Try to extract "Posted X days ago" or similar
-        match = re.search(r"(Posted\s+.*?ago|.*?ago)", link_text, re.IGNORECASE)
-        if match:
-            posted_date_str = match.group(1).strip()
-        else:
-            # Fallback: sometimes date is just "2d ago"
-             match = re.search(r"(\d+[dhwm]\s+ago)", link_text, re.IGNORECASE)
-             if match:
-                 posted_date_str = match.group(1).strip()
-        
-        if posted_date_str == "N/A":
-             print(f"DEBUG: Date not found in text: '{link_text[:50]}...'")
+        # Date scraping: Look in the parent container (the job card)
+        # The link is usually inside a card div. We'll try to get the parent's text.
+        try:
+            # Go up to the likely card container (li or div)
+            # Playwright ElementHandle doesn't have a direct 'parent' method easily accessible in sync mode 
+            # without using xpath or evaluation. 
+            # We will try to find an element containing "ago" near this link.
+            
+            # Strategy: Get the parent element's text content
+            parent_element = link_element.query_selector("xpath=..") 
+            # If parent text is too short, go up one more level
+            card_text = parent_element.text_content().strip()
+            if len(card_text) < 50:
+                 grandparent = parent_element.query_selector("xpath=..")
+                 if grandparent:
+                     card_text = grandparent.text_content().strip()
+            
+            posted_date_str = "N/A"
+            
+            # Try to extract "Posted X days ago" or similar from the CARD text
+            match = re.search(r"(Posted\s+.*?ago|.*?ago)", card_text, re.IGNORECASE)
+            if match:
+                posted_date_str = match.group(1).strip()
+            else:
+                # Fallback: sometimes date is just "2d ago"
+                 match = re.search(r"(\d+[dhwm]\s+ago)", card_text, re.IGNORECASE)
+                 if match:
+                     posted_date_str = match.group(1).strip()
+            
+            if posted_date_str == "N/A":
+                 print(f"DEBUG: Date not found in card text: '{card_text[:50]}...'")
+
+        except Exception as e:
+            print(f"DEBUG: Error finding date in parent: {e}")
+            posted_date_str = "N/A"
 
         new_jobs.append({
             "title": job_title,
