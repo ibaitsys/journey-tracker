@@ -156,6 +156,7 @@ def find_new_jobs(page, known_urls: Set[str]) -> List[dict]:
 
     new_jobs: List[dict] = []
     known_signatures: Set[str] = set()
+    companies_seen_run: Set[str] = set()
     
     for card in job_cards:
         try:
@@ -182,7 +183,11 @@ def find_new_jobs(page, known_urls: Set[str]) -> List[dict]:
             company_el = card.query_selector(".base-search-card__subtitle")
             company = company_el.text_content().strip() if company_el else "Unknown Company"
             
-            # Intra-run duplicate check
+            # Strict Company Deduplication (One job per company per run)
+            if company in companies_seen_run:
+                continue
+
+            # Intra-run duplicate check (Title + Company) - redundant if above is used, but good safety
             signature = f"{job_title}|{company}"
             if signature in known_signatures:
                 continue
@@ -205,6 +210,7 @@ def find_new_jobs(page, known_urls: Set[str]) -> List[dict]:
             })
             known_urls.add(job_url) # Prevent duplicates in same run
             known_signatures.add(signature)
+            companies_seen_run.add(company)
 
         except Exception as e:
             print(f"Error parsing a card: {e}")

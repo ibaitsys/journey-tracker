@@ -184,9 +184,11 @@ def find_new_jobs(page, known_urls: Set[str], known_titles: Set[str]) -> List[di
 
         full_url = f"https://www.twine.net{job_path}"
         if full_url in known_urls:
+            # print(f"Skipping duplicate URL: {full_url}")
             continue
         
         if job_title in known_titles:
+            # print(f"Skipping duplicate Title: {job_title}")
             continue
 
         # Date scraping (heuristic: looking for "Posted" or "ago")
@@ -208,7 +210,12 @@ def find_new_jobs(page, known_urls: Set[str], known_titles: Set[str]) -> List[di
         if iso_date:
              job_dt = datetime.fromisoformat(iso_date)
              if datetime.now() - job_dt > timedelta(days=5):
+                 print(f"Skipping old job ({posted_date_str}): {job_title}")
                  continue
+        else:
+            # If date parsing fails, we might skip or keep. 
+            # For now, let's log it.
+            print(f"Date parsing failed or N/A for: {job_title} ({posted_date_str})")
 
         new_jobs.append({
             "title": job_title,
