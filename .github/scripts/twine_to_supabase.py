@@ -38,18 +38,22 @@ def create_supabase() -> Client:
     return create_client(url, key)
 
 
-def fetch_existing_twine_urls(supabase: Client) -> Set[str]:
-    """Fetch URLs already stored as contact_info for Twine leads."""
-    existing: Set[str] = set()
+def fetch_existing_twine_leads(supabase: Client) -> tuple[Set[str], Set[str]]:
+    """Fetch URLs and Titles already stored for Twine leads to avoid duplicates."""
+    existing_urls: Set[str] = set()
+    existing_titles: Set[str] = set()
     try:
-        res = supabase.table("leads").select("contact_info").eq("source", "Twine").execute()
+        res = supabase.table("leads").select("contact_info, company").eq("source", "Twine").execute()
         for row in res.data or []:
             url = (row.get("contact_info") or "").strip()
             if url:
-                existing.add(url)
+                existing_urls.add(url)
+            title = (row.get("company") or "").strip()
+            if title:
+                existing_titles.add(title)
     except Exception as exc:  # noqa: BLE001
         print(f"Warning: could not fetch existing Twine leads: {exc}")
-    return existing
+    return existing_urls, existing_titles
 
 
 def send_slack_notification(job_title: str, job_url: str) -> None:
@@ -132,7 +136,7 @@ def parse_date_to_iso(date_str: str) -> Optional[str]:
     return None
 
 
-def find_new_jobs(page, known_urls: Set[str]) -> List[dict]:
+def find_new_jobs(page, known_urls: Set[str], known_titles: Set[str]) -> List[dict]:
     print("Scrolling page to load jobs...")
     for _ in range(5):
         page.evaluate("window.scrollBy(0, window.innerHeight)")
@@ -181,6 +185,9 @@ def find_new_jobs(page, known_urls: Set[str]) -> List[dict]:
         full_url = f"https://www.twine.net{job_path}"
         if full_url in known_urls:
             continue
+        
+        if job_title in known_titles:
+            continue
 
         # Date scraping (heuristic: looking for "Posted" or "ago")
         link_text = link_element.text_content().strip()
@@ -201,6 +208,10 @@ def find_new_jobs(page, known_urls: Set[str]) -> List[dict]:
             "url": full_url,
             "posted_date_raw": posted_date_str
         })
+        
+        # Add to known sets to prevent duplicates within the same run
+        known_urls.add(full_url)
+        known_titles.add(job_title)
 
     print(f"New jobs found this run: {len(new_jobs)}")
     return new_jobs
@@ -229,3 +240,31 @@ def insert_leads(supabase: Client, jobs: List[dict]) -> None:
         print(f"Inserted {len(rows)} leads into Supabase.")
     except Exception as exc:  # noqa: BLE001
         print(f"Supabase insert failed: {exc}")
+
+
+def main() -> None:
+    twine_url = env("TWINE_URL", DEFAULT_TWINE_URL)
+    print("--- Twine -> Supabase scraper (CI copy) ---")
+    print(f"[{time.ctime()}] Checking Twine URL: {twine_url}")
+
+    supabase = create_supabase()
+    known_urls, known_titles = fetch_existing_twine_leads(supabase)
+
+    new_jobs: List[dict] = []
+    try:
+        with sync_playwright() as p:
+            browser = p.chromium.launch(headless=True)
+            page = browser.new_page()
+            page.goto(twine_url, wait_until="domcontentloaded", timeout=60000)
+            handle_cookies(page)
+            new_jobs = find_new_jobs(page, known_urls, known_titles)
+            browser.close()
+    except Exception as exc:  # noqa: BLE001
+        print(f"Unexpected error during scraping: {exc}")
+
+    if new_jobs:
+        insert_leads(supabase, new_jobs)
+        for job in new_jobs:
+            send_slack_notification(job["title"], job["url"])
+    else:
+        print("No new jobs to insert.")
