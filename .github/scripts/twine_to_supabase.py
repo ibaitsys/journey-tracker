@@ -243,9 +243,11 @@ def insert_leads(supabase: Client, jobs: List[dict]) -> None:
 
 
 def main() -> None:
-    twine_url = env("TWINE_URL", DEFAULT_TWINE_URL)
+    # Hardcoded URL as requested to ensure stability
+    twine_url = "https://www.twine.net/jobs?remote=1&searchTerm=podcast&status=true"
+    
     print("--- Twine -> Supabase scraper (CI copy) ---")
-    print(f"[{time.ctime()}] Checking Twine URL: {twine_url}")
+    print(f"[{time.ctime()}] Target URL: {twine_url}")
 
     supabase = create_supabase()
     known_urls, known_titles = fetch_existing_twine_leads(supabase)
