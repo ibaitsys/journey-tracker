@@ -2,7 +2,7 @@ import os
 import re
 import time
 from datetime import datetime, timedelta
-from typing import List, Set, Optional
+from typing import List, Set, Optional, Tuple
 
 import requests
 from playwright.sync_api import TimeoutError, sync_playwright
@@ -38,7 +38,7 @@ def create_supabase() -> Client:
     return create_client(url, key)
 
 
-def fetch_existing_twine_leads(supabase: Client) -> tuple[Set[str], Set[str]]:
+def fetch_existing_twine_leads(supabase: Client) -> Tuple[Set[str], Set[str]]:
     """Fetch URLs and Titles already stored for Twine leads to avoid duplicates."""
     existing_urls: Set[str] = set()
     existing_titles: Set[str] = set()
