@@ -178,17 +178,13 @@ def find_new_jobs(page, known_urls: Set[str], known_titles: Set[str]) -> List[di
         if not job_title:
             continue
 
-        search_text = f"{job_title} {job_path}".lower()
-        if not any(keyword in search_text for keyword in JOB_KEYWORDS):
-            continue
-
         full_url = f"https://www.twine.net{job_path}"
         if full_url in known_urls:
-            # print(f"Skipping duplicate URL: {full_url}")
             continue
         
-        if job_title in known_titles:
-            # print(f"Skipping duplicate Title: {job_title}")
+        # Original keyword filter (kept as per 'puxe tudo' likely means only remove new filters)
+        search_text = f"{job_title} {job_path}".lower()
+        if not any(keyword in search_text for keyword in JOB_KEYWORDS):
             continue
 
         # Date scraping (heuristic: looking for "Posted" or "ago")
@@ -205,27 +201,14 @@ def find_new_jobs(page, known_urls: Set[str], known_titles: Set[str]) -> List[di
              if match:
                  posted_date_str = match.group(1).strip()
 
-        # Check if job is within last 5 days
-        iso_date = parse_date_to_iso(posted_date_str)
-        if iso_date:
-             job_dt = datetime.fromisoformat(iso_date)
-             if datetime.now() - job_dt > timedelta(days=5):
-                 print(f"Skipping old job ({posted_date_str}): {job_title}")
-                 continue
-        else:
-            # If date parsing fails, we might skip or keep. 
-            # For now, let's log it.
-            print(f"Date parsing failed or N/A for: {job_title} ({posted_date_str})")
-
         new_jobs.append({
             "title": job_title,
             "url": full_url,
             "posted_date_raw": posted_date_str
         })
         
-        # Add to known sets to prevent duplicates within the same run
+        # Add to known sets to prevent duplicates within the same run (only URL now)
         known_urls.add(full_url)
-        known_titles.add(job_title)
 
     print(f"New jobs found this run: {len(new_jobs)}")
     return new_jobs
