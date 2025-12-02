@@ -143,6 +143,35 @@ def parse_date_to_iso(date_str: str) -> Optional[str]:
     return None
 
 
+def scrape_job_details(page, job_url: str) -> str:
+    """Navigates to the job details page and extracts the posted date."""
+    try:
+        print(f"DEBUG: Navigating to {job_url} to find date...")
+        page.goto(job_url, wait_until="domcontentloaded", timeout=30000)
+        
+        # Wait a moment for dynamic content
+        page.wait_for_timeout(2000)
+        
+        # Try to find the date in the page text
+        # Common patterns on Twine details page: "Posted 2 days ago", "Posted on..."
+        body_text = page.query_selector("body").text_content()
+        
+        # Regex for "Posted X days ago"
+        match = re.search(r"(Posted\s+.*?ago)", body_text, re.IGNORECASE)
+        if match:
+            return match.group(1).strip()
+            
+        # Regex for simple "2d ago" style if "Posted" is missing
+        match = re.search(r"(\d+[dhwm]\s+ago)", body_text, re.IGNORECASE)
+        if match:
+            return match.group(1).strip()
+            
+        return "N/A"
+    except Exception as e:
+        print(f"DEBUG: Failed to scrape details for {job_url}: {e}")
+        return "N/A"
+
+
 def find_new_jobs(page, known_urls: Set[str], known_titles: Set[str]) -> List[dict]:
     print("Scrolling page to load jobs...")
     for _ in range(5):
@@ -158,7 +187,8 @@ def find_new_jobs(page, known_urls: Set[str], known_titles: Set[str]) -> List[di
     job_link_elements = page.query_selector_all(job_link_selector)
     print(f"DEBUG: Total raw link elements found: {len(job_link_elements)}")
 
-    new_jobs: List[dict] = []
+    # First pass: Identify potential new jobs to visit
+    potential_jobs = []
     processed: Set[str] = set()
 
     for link_element in job_link_elements:
@@ -173,7 +203,6 @@ def find_new_jobs(page, known_urls: Set[str], known_titles: Set[str]) -> List[di
                 job_path = job_href[idx:]
                 break
         if not job_path:
-            # print(f"DEBUG: Skipped link (no valid path): {job_href}")
             continue
         if job_path in ("/jobs", "/jobs/", "/projects", "/projects/"):
             continue
@@ -184,64 +213,46 @@ def find_new_jobs(page, known_urls: Set[str], known_titles: Set[str]) -> List[di
         title_el = link_element.query_selector("h1, h2, h3, h4")
         job_title = (title_el.text_content().strip() if title_el else link_element.text_content().strip())
         if not job_title:
-            print(f"DEBUG: Skipped {job_path} (no title)")
             continue
 
         search_text = f"{job_title} {job_path}".lower()
         if not any(keyword in search_text for keyword in JOB_KEYWORDS):
-            print(f"DEBUG: Skipped keyword mismatch: {job_title}")
+            # print(f"DEBUG: Skipped keyword mismatch: {job_title}")
             continue
 
         full_url = f"https://www.twine.net{job_path}"
         if full_url in known_urls:
-            # print(f"DEBUG: Skipped duplicate URL: {full_url}")
             continue
-
-        # Date scraping: Find the full job card and extract date from its text content.
-        card_element = None
-        try:
-            # Attempt to find a more robust card element that contains the entire job listing
-            # Traverse up from the link_element to find a common card container (div, article, or li)
-            card_element = link_element.query_selector("xpath=ancestor::*[self::div or self::article or self::li][1]")
-            if not card_element:
-                # Fallback to direct parent if specific card types not found
-                card_element = link_element.query_selector("xpath=..")
-        except Exception as e:
-            print(f"DEBUG: Error finding card element: {e}")
-            pass # Continue with link_text if card element not found
-
-        target_text_for_date = ""
-        if card_element:
-            target_text_for_date = card_element.text_content().strip()
-        else:
-            # Fallback to link_element text if card_element couldn't be found
-            target_text_for_date = link_element.text_content().strip()
-
-        posted_date_str = "N/A"
         
-        # Try to extract "Posted X days ago" or similar from the target_text_for_date
-        match = re.search(r"(Posted\s+.*?ago|.*?ago)", target_text_for_date, re.IGNORECASE)
-        if match:
-            posted_date_str = match.group(1).strip()
-        else:
-            # Fallback: sometimes date is just "2d ago"
-             match = re.search(r"(\d+[dhwm]\s+ago)", target_text_for_date, re.IGNORECASE)
-             if match:
-                 posted_date_str = match.group(1).strip()
-        
-        if posted_date_str == "N/A":
-             print(f"DEBUG: Date not found in card text. Raw text snippet: '{target_text_for_date[:100]}...'")
-
-        new_jobs.append({
+        # Temporarily store potential job
+        potential_jobs.append({
             "title": job_title,
-            "url": full_url,
-            "posted_date_raw": posted_date_str
+            "url": full_url
         })
-        
-        # Add to known sets to prevent duplicates within the same run (only URL now)
+        # Add to known sets to prevent duplicates within this loop
         known_urls.add(full_url)
 
-    print(f"New jobs found this run: {len(new_jobs)}")
+    print(f"Found {len(potential_jobs)} potential new jobs. Visiting each to get details...")
+
+    new_jobs: List[dict] = []
+    
+    # Second pass: Visit each job page to get the date
+    for job in potential_jobs:
+        posted_date_str = scrape_job_details(page, job["url"])
+        if posted_date_str != "N/A":
+             print(f"  -> Found date: {posted_date_str}")
+        else:
+             print(f"  -> Date not found for {job['title']}")
+
+        new_jobs.append({
+            "title": job["title"],
+            "url": job["url"],
+            "posted_date_raw": posted_date_str
+        })
+        # Short sleep to be polite
+        time.sleep(1)
+
+    print(f"New jobs processed this run: {len(new_jobs)}")
     return new_jobs
 
 
