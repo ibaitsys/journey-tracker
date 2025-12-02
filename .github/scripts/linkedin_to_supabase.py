@@ -1,9 +1,19 @@
+"""
+LinkedIn scraper that writes new jobs into Supabase leads.
+Runs in CI (GitHub Actions).
+
+Environment variables required:
+  SUPABASE_URL
+  SUPABASE_SERVICE_ROLE_KEY
+Optional:
+  LINKEDIN_URL (override default LinkedIn search URL)
+  SLACK_WEBHOOK_URL (if you want Slack alerts)
+"""
+
 import os
 import time
 import random
-import re
-from datetime import datetime, timedelta
-from typing import List, Set, Optional
+from typing import List, Set
 
 import requests
 from playwright.sync_api import TimeoutError, sync_playwright
@@ -13,7 +23,6 @@ from supabase import Client, create_client
 DEFAULT_LINKEDIN_URL = (
     "https://www.linkedin.com/jobs/search/?currentJobId=4332335668&distance=25.0"
     "&geoId=103644278&keywords=%22Podcast%22&origin=JOBS_HOME_KEYWORD_HISTORY"
-    "&f_WT=2"
 )
 
 # Keywords to filter (optional, since the search URL already has keywords)
@@ -74,53 +83,6 @@ def send_slack_notification(job_title: str, job_url: str) -> None:
     except requests.RequestException as exc:
         print(f"Slack error: {exc}")
 
-def parse_date_to_iso(date_str: str) -> Optional[str]:
-    """Converts relative date strings like '2 days ago' to ISO format."""
-    if not date_str or date_str == "N/A":
-        return None
-    
-    now = datetime.now()
-    date_str = date_str.lower().strip()
-    
-    # Regex for "2 days ago", "1 week ago", "3 hours ago"
-    match = re.search(r"(\d+)\s+(day|week|month|hour|minute)s?\s+ago", date_str)
-    if match:
-        amount = int(match.group(1))
-        unit = match.group(2)
-        
-        if unit == "minute":
-            delta = timedelta(minutes=amount)
-        elif unit == "hour":
-            delta = timedelta(hours=amount)
-        elif unit == "day":
-            delta = timedelta(days=amount)
-        elif unit == "week":
-            delta = timedelta(weeks=amount)
-        elif unit == "month":
-            delta = timedelta(days=amount * 30) # Approx
-        else:
-            delta = timedelta(0)
-            
-        return (now - delta).isoformat()
-
-    # Regex for "2d ago", "1w ago"
-    match = re.search(r"(\d+)([dwhm])\s+ago", date_str)
-    if match:
-        amount = int(match.group(1))
-        unit = match.group(2)
-        if unit == "d":
-            delta = timedelta(days=amount)
-        elif unit == "w":
-            delta = timedelta(weeks=amount)
-        elif unit == "h":
-            delta = timedelta(hours=amount)
-        elif unit == "m":
-            delta = timedelta(minutes=amount)
-        else:
-            delta = timedelta(0)
-        return (now - delta).isoformat()
-
-    return None
 
 def find_new_jobs(page, known_urls: Set[str]) -> List[dict]:
     print("Scrolling page to load jobs...")
@@ -170,10 +132,6 @@ def find_new_jobs(page, known_urls: Set[str]) -> List[dict]:
             company_el = card.query_selector(".base-search-card__subtitle")
             company = company_el.text_content().strip() if company_el else "Unknown Company"
             
-            # Date
-            date_el = card.query_selector("time")
-            posted_date = date_el.text_content().strip() if date_el else "N/A"
-
             # Filter by keywords (optional double-check)
             search_text = f"{job_title} {company}".lower()
             # If strict filtering is needed:
@@ -183,8 +141,7 @@ def find_new_jobs(page, known_urls: Set[str]) -> List[dict]:
             new_jobs.append({
                 "title": job_title,
                 "company": company,
-                "url": job_url,
-                "posted_date": posted_date
+                "url": job_url
             })
             known_urls.add(job_url) # Prevent duplicates in same run
 
@@ -211,7 +168,6 @@ def insert_leads(supabase: Client, jobs: List[dict]) -> None:
                 "last_touch": "Not contacted",
                 "next_step": f"Review: {job['title']}",
                 "created_at": now_str,
-                "posted_at": parse_date_to_iso(job.get("posted_date"))
             }
         )
     try:
@@ -219,3 +175,46 @@ def insert_leads(supabase: Client, jobs: List[dict]) -> None:
         print(f"Inserted {len(rows)} leads into Supabase.")
     except Exception as exc:
         print(f"Supabase insert failed: {exc}")
+
+def main() -> None:
+    linkedin_url = env("LINKEDIN_URL") or DEFAULT_LINKEDIN_URL
+    print("--- LinkedIn -> Supabase scraper ---")
+    print(f"[{time.ctime()}] Target URL: {linkedin_url}")
+
+    supabase = create_supabase()
+    known_urls = fetch_existing_linkedin_urls(supabase)
+
+    new_jobs: List[dict] = []
+    try:
+        with sync_playwright() as p:
+            # Launch with some args to look more like a real browser
+            browser = p.chromium.launch(headless=True)
+            context = browser.new_context(
+                user_agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) " + "AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36"
+            )
+            page = context.new_page()
+            
+            page.goto(linkedin_url, wait_until="domcontentloaded", timeout=60000)
+            
+            # Random sleep to mimic human behavior
+            time.sleep(random.uniform(2.0, 5.0))
+
+            # Sometimes a "Sign in" modal pops up or obscures content. 
+            # We can try to dismiss it if selectors are known, or just ignore.
+            
+            new_jobs = find_new_jobs(page, known_urls)
+            browser.close()
+            
+    except Exception as exc:
+        print(f"Unexpected error during scraping: {exc}")
+
+    if new_jobs:
+        insert_leads(supabase, new_jobs)
+        for job in new_jobs:
+            send_slack_notification(job["title"], job["url"])
+    else:
+        print("No new jobs to insert.")
+
+
+if __name__ == "__main__":
+    main()

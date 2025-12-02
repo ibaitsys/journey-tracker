@@ -24,16 +24,18 @@ jobs:
           pip install playwright==1.45.0 requests supabase
           playwright install chromium
 
-      - name: Run Scrapers
+      - name: Run Twine Scraper
         env:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
           TWINE_URL: ${{ secrets.TWINE_URL }}
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+        run: python .github/scripts/twine_to_supabase.py
+
+      - name: Run LinkedIn Scraper
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
           LINKEDIN_URL: ${{ secrets.LINKEDIN_URL }}
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
-        run: |
-          echo "Running Twine Scraper..."
-          python .github/scripts/twine_to_supabase.py
-          echo "----------------------------------------"
-          echo "Running LinkedIn Scraper..."
-          python .github/scripts/linkedin_to_supabase.py
+        run: python .github/scripts/linkedin_to_supabase.py
