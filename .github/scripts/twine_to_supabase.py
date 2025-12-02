@@ -1,12 +1,19 @@
+print("DEBUG: Script started...")
 import os
 import re
 import time
+import sys
 from datetime import datetime, timedelta
 from typing import List, Set, Optional, Tuple
 
-import requests
-from playwright.sync_api import TimeoutError, sync_playwright
-from supabase import Client, create_client
+try:
+    import requests
+    from playwright.sync_api import TimeoutError, sync_playwright
+    from supabase import Client, create_client
+    print("DEBUG: Imports successful.")
+except ImportError as e:
+    print(f"CRITICAL: Import failed: {e}")
+    sys.exit(1)
 
 
 DEFAULT_TWINE_URL = (
