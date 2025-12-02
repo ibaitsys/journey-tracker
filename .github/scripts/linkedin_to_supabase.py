@@ -21,8 +21,8 @@ from supabase import Client, create_client
 
 
 DEFAULT_LINKEDIN_URL = (
-    "https://www.linkedin.com/jobs/search/?currentJobId=4325083614&distance=25.0"
-    "&f_WT=2&geoId=103644278&keywords=%22Podcast%22&origin=JOB_SEARCH_PAGE_JOB_FILTER"
+    "https://www.linkedin.com/jobs/search/?currentJobId=4340763775&distance=25.0"
+    "&f_TPR=r86400&f_WT=2&geoId=103644278&keywords=%22Podcast%22&origin=JOB_SEARCH_PAGE_JOB_FILTER"
 )
 
 # Keywords to filter (optional, since the search URL already has keywords)
