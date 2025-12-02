@@ -149,7 +149,7 @@ def find_new_jobs(page, known_urls: Set[str], known_titles: Set[str]) -> List[di
 
     job_link_selector = "a[href*='/jobs/'], a[href*='/projects/']"
     job_link_elements = page.query_selector_all(job_link_selector)
-    print(f"Found {len(job_link_elements)} links that look like jobs.")
+    print(f"DEBUG: Total raw link elements found: {len(job_link_elements)}")
 
     new_jobs: List[dict] = []
     processed: Set[str] = set()
@@ -166,6 +166,7 @@ def find_new_jobs(page, known_urls: Set[str], known_titles: Set[str]) -> List[di
                 job_path = job_href[idx:]
                 break
         if not job_path:
+            # print(f"DEBUG: Skipped link (no valid path): {job_href}")
             continue
         if job_path in ("/jobs", "/jobs/", "/projects", "/projects/"):
             continue
@@ -176,15 +177,17 @@ def find_new_jobs(page, known_urls: Set[str], known_titles: Set[str]) -> List[di
         title_el = link_element.query_selector("h1, h2, h3, h4")
         job_title = (title_el.text_content().strip() if title_el else link_element.text_content().strip())
         if not job_title:
+            print(f"DEBUG: Skipped {job_path} (no title)")
+            continue
+
+        search_text = f"{job_title} {job_path}".lower()
+        if not any(keyword in search_text for keyword in JOB_KEYWORDS):
+            print(f"DEBUG: Skipped keyword mismatch: {job_title}")
             continue
 
         full_url = f"https://www.twine.net{job_path}"
         if full_url in known_urls:
-            continue
-        
-        # Original keyword filter (kept as per 'puxe tudo' likely means only remove new filters)
-        search_text = f"{job_title} {job_path}".lower()
-        if not any(keyword in search_text for keyword in JOB_KEYWORDS):
+            # print(f"DEBUG: Skipped duplicate URL: {full_url}")
             continue
 
         # Date scraping (heuristic: looking for "Posted" or "ago")
