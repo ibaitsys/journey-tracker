@@ -202,7 +202,8 @@ def find_new_jobs(page, known_urls: Set[str]) -> List[dict]:
             snippet_text = snippet_el.text_content().strip() if snippet_el else ""
             title_lc = job_title.lower()
             snippet_lc = snippet_text.lower()
-            card_matches = ("podcast" in title_lc) or ("podcast" in snippet_lc)
+            company_lc = company.lower() if company else ""
+            card_matches = ("podcast" in title_lc) or ("podcast" in snippet_lc) or ("podcast" in company_lc)
 
             new_jobs.append({
                 "title": job_title,
