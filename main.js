@@ -35,7 +35,7 @@
       try {
         const { data, error } = await supabaseClient
           .from("leads")
-          .select("id, company, contact_info, source_url, description, source, posted_at, priority, last_touch, next_step, history, created_at")
+          .select("id, project, company, contact_info, source_url, description, source, posted_at, priority, last_touch, next_step, history, created_at")
           .order("posted_at", { ascending: false });
         if (error) {
           console.error("Supabase fetch error", error);
@@ -53,9 +53,13 @@
       const prettyPriority = priority.charAt(0).toUpperCase() + priority.slice(1);
       const contactInfo = row.contact_info || "";
       const sourceUrl = row.source_url || row.contact_info || "";
+      const project = row.project || row.company || "Untitled lead";
+      const company = row.company || "";
       return {
         id: row.id,
-        name: row.company || "Untitled lead",
+        name: project,
+        project,
+        company,
         postedAt: row.posted_at || "N/A",
         contact: contactInfo || "N/A",
         contactEmail: contactInfo,
@@ -83,7 +87,8 @@
         return;
       }
       const body = {
-        company: payload.name,
+        project: payload.project || payload.name,
+        company: payload.company || null,
         contact_info: payload.contactEmail || payload.contact || null,
         source_url: payload.sourceUrl || null,
         description: payload.description || null,
@@ -209,7 +214,8 @@
       leadSubmit.textContent = record ? "Save changes" : "Save lead";
       if (record) {
         document.getElementById("lead-source").value = record.type || "";
-        document.getElementById("lead-name").value = record.name || "";
+        document.getElementById("lead-project").value = record.project || record.name || "";
+        document.getElementById("lead-company").value = record.company || "";
         document.getElementById("lead-email").value = record.contactEmail || "";
         document.getElementById("lead-phone").value = record.contactPhone || "";
         document.getElementById("lead-source-url").value = record.sourceUrl || "";
@@ -233,7 +239,8 @@
 
     function buildLeadFromForm(existing) {
       const source = document.getElementById("lead-source").value || "";
-      const name = document.getElementById("lead-name").value || "";
+      const project = document.getElementById("lead-project").value || "";
+      const company = document.getElementById("lead-company").value || "";
       const email = document.getElementById("lead-email").value || "";
       const phone = document.getElementById("lead-phone").value || "";
       const sourceUrl = document.getElementById("lead-source-url").value || "";
@@ -247,9 +254,13 @@
       const base = existing || {};
       const retentionData = base.retention || { reviews: [], testimony: "", renewDate: getDefaultRenewalDate(), contractValue: "TBD", renewalProbability: "Pending", lastCheckIn: "Today", nextEpisodeDue: getDefaultEpisodeDueDate(), feedbackStatus: "Not sent" };
       const computedSubstage = stage === "acquisition" ? (base.substage || "FIRST CONTACT") : (stage === "retention" ? "FIRST EPISODE DELIVERED" : null);
+      const resolvedProject = project || base.project || base.name || "";
+      const resolvedCompany = company || base.company || "";
       return {
         id: base.id || Date.now(),
-        name,
+        name: resolvedProject || resolvedCompany || "Untitled lead",
+        project: resolvedProject || resolvedCompany,
+        company: resolvedCompany,
         contact: contactCombined,
         contactEmail: email,
         contactPhone: phone,
@@ -348,10 +359,13 @@
         const row = document.createElement("tr");
         const priorityClass = lead.priority === "High" ? "tag-green" : lead.priority === "Medium" ? "tag-yellow" : "";
         const sourceUrlCell = lead.sourceUrl ? `<a href="${lead.sourceUrl}" target="_blank" rel="noopener">Open</a>` : "N/A";
+        const projectName = lead.project || lead.name || "N/A";
+        const companyName = lead.company || "N/A";
         row.innerHTML = `
           <td>${lead.type}</td>
           <td>${formatRelativeTime(lead.postedAt)}</td>
-          <td>${lead.name}</td>
+          <td>${projectName}</td>
+          <td>${companyName}</td>
           <td>${lead.contact}</td>
           <td>${sourceUrlCell}</td>
           <td>${lead.description || "N/A"}</td>
@@ -370,8 +384,7 @@
         tbody.appendChild(row);
       });
     }
-
-    function renderAcquisition(filterHigh = false) {
+function renderAcquisition(filterHigh = false) {
       const tbody = document.getElementById("acquisition-body");
       tbody.innerHTML = "";
       let prospects = state.records.filter(r => r.stage === "acquisition");

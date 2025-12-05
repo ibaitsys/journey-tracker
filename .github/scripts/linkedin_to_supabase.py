@@ -206,6 +206,7 @@ def find_new_jobs(page, known_urls: Set[str]) -> List[dict]:
             
             new_jobs.append({
                 "title": job_title,
+                "project": job_title,
                 "company": company,
                 "url": job_url,
                 "posted_date": posted_date,
@@ -259,7 +260,8 @@ def insert_leads(supabase: Client, jobs: List[dict]) -> None:
     for job in jobs:
         rows.append(
             {
-                "company": job["company"],  # Or combine title + company
+                "project": job.get("project") or job.get("title"),
+                "company": job.get("company"),
                 "contact_info": None,  # keep contact separate; job URL goes to source_url
                 "source_url": job["url"],
                 "source": "LinkedIn",

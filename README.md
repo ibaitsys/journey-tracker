@@ -46,7 +46,8 @@ The system uses a single table named **`leads`**.
 | Column | Type | Description |
 | :--- | :--- | :--- |
 | `id` | `int8` | Primary Key. |
-| `company` | `text` | Job Title (Twine) or Company Name (LinkedIn). |
+| `project` | `text` | Project / role title (job title). |
+| `company` | `text` | Company / brand name. |
 | `contact_info` | `text` | Contact email/phone if available. |
 | `source_url` | `text` | URL to the job listing (LinkedIn/Twine). |
 | `description` | `text` | Short description/snippet of the lead. |
@@ -55,6 +56,12 @@ The system uses a single table named **`leads`**.
 | `posted_at` | `timestamptz`| **Crucial.** The ISO timestamp of when the job was posted. |
 | `created_at` | `timestamptz`| When the record was added to the DB. |
 | `stage` | `text` | Pipeline stage (default: "lead"). |
+
+Migration note (split project vs company):
+```sql
+alter table leads add column if not exists project text;
+update leads set project = coalesce(project, company);
+```
 
 **Note:** The `posted_at` column is automatically calculated by the scrapers. For example, if a job says "Posted 2 days ago", the scraper calculates the exact date and saves it.
 
