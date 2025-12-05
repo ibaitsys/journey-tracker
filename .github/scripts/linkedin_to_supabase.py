@@ -56,12 +56,12 @@ def fetch_existing_linkedin_urls(supabase: Client) -> Set[str]:
     """Fetch URLs already stored as contact_info for LinkedIn leads."""
     existing: Set[str] = set()
     try:
-        # We use 'contact_info' to store the URL, similar to Twine scraper
-        res = supabase.table("leads").select("contact_info").eq("source", "LinkedIn").execute()
+        res = supabase.table("leads").select("contact_info, source_url").eq("source", "LinkedIn").execute()
         for row in res.data or []:
-            url = (row.get("contact_info") or "").strip()
-            if url:
-                existing.add(url)
+            for key in ("contact_info", "source_url"):
+                url = (row.get(key) or "").strip()
+                if url:
+                    existing.add(url)
     except Exception as exc:
         print(f"Warning: could not fetch existing LinkedIn leads: {exc}")
     return existing
@@ -196,17 +196,20 @@ def find_new_jobs(page, known_urls: Set[str]) -> List[dict]:
             date_el = card.query_selector("time")
             posted_date = date_el.text_content().strip() if date_el else "N/A"
 
-            # Filter by keywords (optional double-check)
-            search_text = f"{job_title} {company}".lower()
-            # If strict filtering is needed:
-            # if not any(k in search_text for k in JOB_KEYWORDS):
-            #    continue
+            # Strict filter: require \"podcast\" in title or snippet (company names often add noise)
+            snippet_el = card.query_selector(".job-search-card__snippet") or card.query_selector(".base-search-card__snippet")
+            snippet_text = snippet_el.text_content().strip() if snippet_el else ""
+            title_lc = job_title.lower()
+            snippet_lc = snippet_text.lower()
+            if "podcast" not in title_lc and "podcast" not in snippet_lc:
+                continue
             
             new_jobs.append({
                 "title": job_title,
                 "company": company,
                 "url": job_url,
-                "posted_date": posted_date
+                "posted_date": posted_date,
+                "description": snippet_text
             })
             known_urls.add(job_url) # Prevent duplicates in same run
             known_signatures.add(signature)
@@ -229,13 +232,15 @@ def insert_leads(supabase: Client, jobs: List[dict]) -> None:
         rows.append(
             {
                 "company": job["company"],  # Or combine title + company
-                "contact_info": job["url"],
+                "contact_info": None,  # keep contact separate; job URL goes to source_url
+                "source_url": job["url"],
                 "source": "LinkedIn",
                 "priority": "medium", # Default priority
                 "last_touch": "Not contacted",
                 "next_step": f"Review: {job['title']}",
                 "created_at": now_str,
-                "posted_at": parse_date_to_iso(job.get("posted_date"))
+                "posted_at": parse_date_to_iso(job.get("posted_date")),
+                "description": job.get("description")
             }
         )
     try:

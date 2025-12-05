@@ -115,6 +115,8 @@
                 <th>Posted</th>
                 <th>Project or Company</th>
                 <th>Contact</th>
+                <th>Source URL</th>
+                <th>Description</th>
                 <th>Service interest</th>
                 <th>Priority</th>
                 <th>Last touch</th>
@@ -246,8 +248,16 @@
             <input id="lead-phone" type="text" placeholder="+1 (555) 000-0000" />
           </div>
           <div class="field">
+            <label for="lead-source-url">Source URL</label>
+            <input id="lead-source-url" type="url" placeholder="https://..." />
+          </div>
+          <div class="field">
             <label for="lead-service">Service interest</label>
             <input id="lead-service" type="text" placeholder="Full production" />
+          </div>
+          <div class="field" style="grid-column: 1 / -1;">
+            <label for="lead-description">Description</label>
+            <textarea id="lead-description" placeholder="Short description or notes"></textarea>
           </div>
           <div class="field">
             <label for="lead-priority">Priority</label>

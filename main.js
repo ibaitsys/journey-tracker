@@ -35,7 +35,7 @@
       try {
         const { data, error } = await supabaseClient
           .from("leads")
-          .select("id, company, contact_info, source, posted_at, priority, last_touch, next_step, history, created_at")
+          .select("id, company, contact_info, source_url, description, source, posted_at, priority, last_touch, next_step, history, created_at")
           .order("posted_at", { ascending: false });
         if (error) {
           console.error("Supabase fetch error", error);
@@ -51,13 +51,17 @@
     function mapSupabaseLead(row) {
       const priority = (row.priority || "medium").toLowerCase();
       const prettyPriority = priority.charAt(0).toUpperCase() + priority.slice(1);
+      const contactInfo = row.contact_info || "";
+      const sourceUrl = row.source_url || row.contact_info || "";
       return {
         id: row.id,
         name: row.company || "Untitled lead",
         postedAt: row.posted_at || "N/A",
-        contact: row.contact_info || "N/A",
-        contactEmail: row.contact_info || "",
+        contact: contactInfo || "N/A",
+        contactEmail: contactInfo,
         contactPhone: "",
+        sourceUrl,
+        description: row.description || "",
         type: row.source || "Other",
         stage: "lead",
         substage: null,
@@ -81,6 +85,8 @@
       const body = {
         company: payload.name,
         contact_info: payload.contactEmail || payload.contact || null,
+        source_url: payload.sourceUrl || null,
+        description: payload.description || null,
         source: payload.type || null,
         priority: (payload.priority || "Medium").toLowerCase(),
         last_touch: payload.lastTouch || null,
@@ -206,6 +212,8 @@
         document.getElementById("lead-name").value = record.name || "";
         document.getElementById("lead-email").value = record.contactEmail || "";
         document.getElementById("lead-phone").value = record.contactPhone || "";
+        document.getElementById("lead-source-url").value = record.sourceUrl || "";
+        document.getElementById("lead-description").value = record.description || "";
         document.getElementById("lead-service").value = record.serviceInterest || "";
         document.getElementById("lead-last-touch").value = record.lastTouch || "Not contacted";
         document.getElementById("lead-next-step").value = record.nextStep || "Draft outreach";
@@ -228,6 +236,8 @@
       const name = document.getElementById("lead-name").value || "";
       const email = document.getElementById("lead-email").value || "";
       const phone = document.getElementById("lead-phone").value || "";
+      const sourceUrl = document.getElementById("lead-source-url").value || "";
+      const description = document.getElementById("lead-description").value || "";
       const serviceInterest = document.getElementById("lead-service").value || "";
       const priority = leadPriority.value || "Medium";
       const lastTouch = document.getElementById("lead-last-touch").value || "Not contacted";
@@ -243,6 +253,8 @@
         contact: contactCombined,
         contactEmail: email,
         contactPhone: phone,
+        sourceUrl: sourceUrl || base.sourceUrl || "",
+        description: description || base.description || "",
         type: source || base.type || "Other",
         stage,
         substage: computedSubstage,
@@ -335,11 +347,14 @@
       leads.forEach(lead => {
         const row = document.createElement("tr");
         const priorityClass = lead.priority === "High" ? "tag-green" : lead.priority === "Medium" ? "tag-yellow" : "";
+        const sourceUrlCell = lead.sourceUrl ? `<a href="${lead.sourceUrl}" target="_blank" rel="noopener">Open</a>` : "N/A";
         row.innerHTML = `
           <td>${lead.type}</td>
           <td>${formatRelativeTime(lead.postedAt)}</td>
           <td>${lead.name}</td>
           <td>${lead.contact}</td>
+          <td>${sourceUrlCell}</td>
+          <td>${lead.description || "N/A"}</td>
           <td>${lead.serviceInterest || "N/A"}</td>
           <td><span class="tag ${priorityClass}">${lead.priority || "None"}</span></td>
           <td>${lead.lastTouch || "Not contacted"}</td>

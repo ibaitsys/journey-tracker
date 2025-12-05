@@ -50,11 +50,12 @@ def fetch_existing_twine_leads(supabase: Client) -> Tuple[Set[str], Set[str]]:
     existing_urls: Set[str] = set()
     existing_titles: Set[str] = set()
     try:
-        res = supabase.table("leads").select("contact_info, company").eq("source", "Twine").execute()
+        res = supabase.table("leads").select("contact_info, source_url, company").eq("source", "Twine").execute()
         for row in res.data or []:
-            url = (row.get("contact_info") or "").strip()
-            if url:
-                existing_urls.add(url)
+            for key in ("contact_info", "source_url"):
+                url = (row.get(key) or "").strip()
+                if url:
+                    existing_urls.add(url)
             title = (row.get("company") or "").strip()
             if title:
                 existing_titles.add(title)
@@ -271,13 +272,15 @@ def insert_leads(supabase: Client, jobs: List[dict]) -> None:
         rows.append(
             {
                 "company": job["title"],
-                "contact_info": job["url"],
+                "contact_info": None,  # keep contact separate; job URL goes to source_url
+                "source_url": job["url"],
                 "source": "Twine",
                 "priority": "medium",
                 "last_touch": "Not contacted",
                 "next_step": "Review Twine lead",
                 "created_at": now_str,
-                "posted_at": parse_date_to_iso(job.get("posted_date_raw"))
+                "posted_at": parse_date_to_iso(job.get("posted_date_raw")),
+                "description": job.get("description")
             }
         )
     try:

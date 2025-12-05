@@ -47,7 +47,9 @@ The system uses a single table named **`leads`**.
 | :--- | :--- | :--- |
 | `id` | `int8` | Primary Key. |
 | `company` | `text` | Job Title (Twine) or Company Name (LinkedIn). |
-| `contact_info` | `text` | **Unique** URL to the job listing. |
+| `contact_info` | `text` | Contact email/phone if available. |
+| `source_url` | `text` | URL to the job listing (LinkedIn/Twine). |
+| `description` | `text` | Short description/snippet of the lead. |
 | `source` | `text` | "Twine" or "LinkedIn". |
 | `priority` | `text` | Default: "Medium". |
 | `posted_at` | `timestamptz`| **Crucial.** The ISO timestamp of when the job was posted. |
