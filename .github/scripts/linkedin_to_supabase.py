@@ -157,6 +157,7 @@ def find_new_jobs(page, known_urls: Set[str]) -> List[dict]:
     new_jobs: List[dict] = []
     known_signatures: Set[str] = set()
     companies_seen_run: Set[str] = set()
+    seen_urls: Set[str] = set()
     
     for card in job_cards:
         try:
@@ -172,7 +173,7 @@ def find_new_jobs(page, known_urls: Set[str]) -> List[dict]:
             # Clean URL (remove query params for uniqueness check)
             job_url = raw_url.split("?")[0].rstrip('/')
 
-            if job_url in known_urls:
+            if job_url in known_urls or job_url in seen_urls:
                 continue
 
             # Title
@@ -196,23 +197,23 @@ def find_new_jobs(page, known_urls: Set[str]) -> List[dict]:
             date_el = card.query_selector("time")
             posted_date = date_el.text_content().strip() if date_el else "N/A"
 
-            # Strict filter: require \"podcast\" in title or snippet (company names often add noise)
+            # Gather snippet and capture whether the card text matches "podcast"
             snippet_el = card.query_selector(".job-search-card__snippet") or card.query_selector(".base-search-card__snippet")
             snippet_text = snippet_el.text_content().strip() if snippet_el else ""
             title_lc = job_title.lower()
             snippet_lc = snippet_text.lower()
-            if "podcast" not in title_lc and "podcast" not in snippet_lc:
-                continue
-            
+            card_matches = ("podcast" in title_lc) or ("podcast" in snippet_lc)
+
             new_jobs.append({
                 "title": job_title,
                 "project": job_title,
                 "company": company,
                 "url": job_url,
                 "posted_date": posted_date,
-                "description": snippet_text
+                "description": snippet_text,
+                "card_matches": card_matches
             })
-            known_urls.add(job_url) # Prevent duplicates in same run
+            seen_urls.add(job_url)
             known_signatures.add(signature)
             companies_seen_run.add(company)
 
