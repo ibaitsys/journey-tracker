@@ -218,7 +218,20 @@
     </main>
   </div>
 
-  <div class="modal-backdrop" id="lead-modal">
+  
+  <div class="modal-backdrop" id="description-modal">
+    <div class="modal">
+      <header>
+        <h3>Full Description</h3>
+        <button type="button" class="btn" id="description-close">Close</button>
+      </header>
+      <div class="modal-body" style="max-height: 60vh; overflow:auto; white-space: pre-wrap;" id="description-content"></div>
+      <footer>
+        <button type="button" class="btn" id="description-close-footer">Close</button>
+      </footer>
+    </div>
+  </div>
+<div class="modal-backdrop" id="lead-modal">
     <div class="modal">
       <header>
         <h3 id="lead-modal-title">Add lead</h3>

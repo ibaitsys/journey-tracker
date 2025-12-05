@@ -361,6 +361,9 @@
         const sourceUrlCell = lead.sourceUrl ? `<a href="${lead.sourceUrl}" target="_blank" rel="noopener">Open</a>` : "N/A";
         const projectName = lead.project || lead.name || "N/A";
         const companyName = lead.company || "N/A";
+        const descriptionText = lead.description || "";
+        const truncated = descriptionText && descriptionText.length > 120 ? `${descriptionText.slice(0, 120)}...` : (descriptionText || "N/A");
+        const descCell = descriptionText ? `${truncated} <button class="btn" data-action="show-description" data-id="${lead.id}">Show more</button>` : "N/A";
         row.innerHTML = `
           <td>${lead.type}</td>
           <td>${formatRelativeTime(lead.postedAt)}</td>
@@ -368,7 +371,7 @@
           <td>${companyName}</td>
           <td>${lead.contact}</td>
           <td>${sourceUrlCell}</td>
-          <td>${lead.description || "N/A"}</td>
+          <td>${descCell}</td>
           <td>${lead.serviceInterest || "N/A"}</td>
           <td><span class="tag ${priorityClass}">${lead.priority || "None"}</span></td>
           <td>${lead.lastTouch || "Not contacted"}</td>
@@ -548,6 +551,16 @@ function renderAcquisition(filterHigh = false) {
       document.getElementById("leads-body").addEventListener("click", event => {
         const target = event.target;
         const id = target.dataset.id;
+        if (target.dataset.action === "show-description") {
+          const record = state.records.find(r => idsMatch(r.id, id));
+          if (record) {
+            const modal = document.getElementById("description-modal");
+            const content = document.getElementById("description-content");
+            content.textContent = record.description || "No description";
+            modal.classList.add("active");
+          }
+          return;
+        }
         if (!id) return;
         if (target.dataset.action === "lead-promote") {
           promoteLeadToAcquisition(id);
@@ -568,6 +581,10 @@ function renderAcquisition(filterHigh = false) {
       });
       leadModalClose.addEventListener("click", closeLeadModal);
       leadCancel.addEventListener("click", closeLeadModal);
+      const descModal = document.getElementById("description-modal");
+      const descClose = document.getElementById("description-close");
+      const descCloseFooter = document.getElementById("description-close-footer");
+      [descClose, descCloseFooter].forEach(btn => btn && btn.addEventListener("click", () => descModal.classList.remove("active")));
             leadForm.addEventListener("submit", async event => {
         event.preventDefault();
         const existing = editingLeadId ? state.records.find(r => idsMatch(r.id, editingLeadId)) : null;
