@@ -274,7 +274,7 @@ def insert_leads(supabase: Client, jobs: List[dict]) -> None:
         rows.append(
             {
                 "project": job.get("project") or job["title"],
-                "company": job.get("company"),
+                "company": job.get("company") or job.get("project") or job["title"],
                 "contact_info": None,  # keep contact separate; job URL goes to source_url
                 "source_url": job["url"],
                 "source": "Twine",
