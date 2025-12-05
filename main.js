@@ -362,7 +362,7 @@
         const projectName = lead.project || lead.name || "N/A";
         const companyName = lead.company || "N/A";
         const descriptionText = lead.description || "";
-        const truncated = descriptionText && descriptionText.length > 120 ? `${descriptionText.slice(0, 120)}...` : (descriptionText || "N/A");
+        const truncated = descriptionText && descriptionText.length > 39 ? `${descriptionText.slice(0, 39)}...` : (descriptionText || "N/A");
         const descCell = descriptionText ? `${truncated} <button class="btn" data-action="show-description" data-id="${lead.id}">Show more</button>` : "N/A";
         row.innerHTML = `
           <td>${lead.type}</td>
