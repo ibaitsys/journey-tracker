@@ -223,6 +223,34 @@ def find_new_jobs(page, known_urls: Set[str]) -> List[dict]:
     return new_jobs
 
 
+def fetch_job_description(context, job_url: str) -> str:
+    """Visit the job detail page and pull a description/snippet."""
+    try:
+        page = context.new_page()
+        page.goto(job_url, wait_until="domcontentloaded", timeout=30000)
+        # Try common selectors first
+        for selector in [
+            "[data-test-job-description-text]",
+            ".description__text",
+            ".show-more-less-html__markup",
+            "article"
+        ]:
+            el = page.query_selector(selector)
+            if el:
+                text = (el.text_content() or "").strip()
+                if text:
+                    page.close()
+                    return text
+        # Fallback to body text limited in length
+        body = page.query_selector("body")
+        text = (body.text_content() or "").strip() if body else ""
+        page.close()
+        return text[:2000]
+    except Exception as exc:
+        print(f"Description scrape failed for {job_url}: {exc}")
+        return ""
+
+
 def insert_leads(supabase: Client, jobs: List[dict]) -> None:
     if not jobs:
         return
@@ -276,6 +304,11 @@ def main() -> None:
             # We can try to dismiss it if selectors are known, or just ignore.
             
             new_jobs = find_new_jobs(page, known_urls)
+            if new_jobs:
+                for job in new_jobs:
+                    detail_desc = fetch_job_description(context, job["url"])
+                    if detail_desc:
+                        job["description"] = detail_desc
             browser.close()
             
     except Exception as exc:
