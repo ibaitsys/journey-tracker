@@ -201,9 +201,9 @@ def find_new_jobs(page, known_urls: Set[str]) -> List[dict]:
             snippet_el = card.query_selector(".job-search-card__snippet") or card.query_selector(".base-search-card__snippet")
             snippet_text = snippet_el.text_content().strip() if snippet_el else ""
             title_lc = job_title.lower()
-            snippet_lc = snippet_text.lower()
             company_lc = company.lower() if company else ""
-            card_matches = ("podcast" in title_lc) or ("podcast" in snippet_lc) or ("podcast" in company_lc)
+            # Only accept if title or company explicitly mentions podcast
+            card_matches = ("podcast" in title_lc) or ("podcast" in company_lc)
 
             new_jobs.append({
                 "title": job_title,
@@ -308,11 +308,19 @@ def main() -> None:
             # We can try to dismiss it if selectors are known, or just ignore.
             
             new_jobs = find_new_jobs(page, known_urls)
+            accepted_jobs: List[dict] = []
             if new_jobs:
                 for job in new_jobs:
                     detail_desc = fetch_job_description(context, job["url"])
                     if detail_desc:
                         job["description"] = detail_desc
+                    # Final gate: must mention podcast in title or company
+                    if job.get("card_matches"):
+                        accepted_jobs.append(job)
+                        known_urls.add(job["url"])
+                    else:
+                        print(f"Skip non-podcast (title/company): {job.get('title')} | {job.get('company')}")
+            new_jobs = accepted_jobs
             browser.close()
             
     except Exception as exc:
