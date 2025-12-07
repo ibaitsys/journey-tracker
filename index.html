@@ -175,6 +175,48 @@
   </div>
 
   
+  <div class="drawer-overlay" id="lead-drawer-overlay"></div>
+  <aside class="lead-drawer" id="lead-drawer">
+    <header class="lead-drawer__header">
+      <div>
+        <div class="lead-drawer__title" id="drawer-title">Lead</div>
+        <div class="lead-drawer__meta" id="drawer-meta">Source - Posted</div>
+      </div>
+      <button class="btn" id="drawer-close">Close</button>
+    </header>
+    <section class="drawer-section">
+      <div class="drawer-kpis">
+        <div class="drawer-kpi">
+          <div class="drawer-kpi-label">Priority</div>
+          <div class="drawer-kpi-value" id="drawer-priority">-</div>
+        </div>
+        <div class="drawer-kpi">
+          <div class="drawer-kpi-label">Last touch</div>
+          <div class="drawer-kpi-value" id="drawer-last-touch">-</div>
+        </div>
+        <div class="drawer-kpi">
+          <div class="drawer-kpi-label">Next step</div>
+          <div class="drawer-kpi-value" id="drawer-next-step">-</div>
+        </div>
+        <div class="drawer-kpi">
+          <div class="drawer-kpi-label">Channel</div>
+          <div class="drawer-kpi-value" id="drawer-channel">-</div>
+        </div>
+      </div>
+    </section>
+    <section class="drawer-section">
+      <h4 class="drawer-subtitle">Description</h4>
+      <p class="drawer-text" id="drawer-description">No description</p>
+    </section>
+    <section class="drawer-section">
+      <h4 class="drawer-subtitle">Acquisition path</h4>
+      <div class="drawer-stepper" id="drawer-stepper"></div>
+    </section>
+    <footer class="lead-drawer__footer">
+      <button class="btn btn-primary" id="drawer-promote">Promote to Acquisition</button>
+    </footer>
+  </aside>
+
   <div class="modal-backdrop" id="description-modal">
     <div class="modal">
       <header>
@@ -279,7 +321,6 @@
   <script src="main.js"></script>
 </body>
 </html>
-
 
 
 

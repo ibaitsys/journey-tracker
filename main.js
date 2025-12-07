@@ -10,6 +10,18 @@
     const leadModalClose = document.getElementById("lead-modal-close");
     const leadCancel = document.getElementById("lead-cancel");
     const leadPriority = document.getElementById("lead-priority");
+    const leadDrawer = document.getElementById("lead-drawer");
+    const leadDrawerOverlay = document.getElementById("lead-drawer-overlay");
+    const drawerTitle = document.getElementById("drawer-title");
+    const drawerMeta = document.getElementById("drawer-meta");
+    const drawerPriority = document.getElementById("drawer-priority");
+    const drawerLastTouch = document.getElementById("drawer-last-touch");
+    const drawerNextStep = document.getElementById("drawer-next-step");
+    const drawerChannel = document.getElementById("drawer-channel");
+    const drawerDescription = document.getElementById("drawer-description");
+    const drawerStepper = document.getElementById("drawer-stepper");
+    const drawerClose = document.getElementById("drawer-close");
+    const drawerPromote = document.getElementById("drawer-promote");
     const leadStage = document.getElementById("lead-stage");
     const leadModalTitle = document.getElementById("lead-modal-title");
     const leadSubmit = document.getElementById("lead-submit");
@@ -19,6 +31,7 @@
     const STORAGE_KEY = "podtechs_journey_state_v1";
     const MIGRATION_KEY = "podtechs_migration_v2_posted_date";
     let editingLeadId = null;
+    let activeDrawerLeadId = null;
     let draftHistory = [];
 
     function checkMigration() {
@@ -516,6 +529,73 @@ function renderAcquisition(filterHigh = false) {
       return date.toISOString().slice(0, 10);
     }
 
+    function renderDrawerStepper(record) {
+      if (!drawerStepper) return;
+      const currentIndex = record.substage ? substages.indexOf(record.substage) : 0;
+      const safeIndex = currentIndex >= 0 ? currentIndex : 0;
+      const steps = substages.map((stage, idx) => {
+        let status = "pending";
+        if (idx < safeIndex) status = "completed";
+        else if (idx === safeIndex) status = "active";
+        return `
+          <div class="drawer-step drawer-step-${status}">
+            <div class="drawer-step-circle"></div>
+            <div>
+              <div class="drawer-step-title">${stage}</div>
+              <div class="drawer-step-meta">${idx < safeIndex ? "Completed" : idx === safeIndex ? "Up next" : "Pending"}</div>
+            </div>
+          </div>
+        `;
+      }).join("");
+      drawerStepper.innerHTML = steps;
+    }
+
+    function openLeadDrawer(id) {
+      if (!leadDrawer || !leadDrawerOverlay) return;
+      const lead = state.records.find(r => idsMatch(r.id, id));
+      if (!lead) return;
+      activeDrawerLeadId = id;
+      drawerTitle.textContent = lead.project || lead.name || "Lead";
+      const posted = formatRelativeTime(lead.postedAt);
+      drawerMeta.textContent = `${lead.type || "Source"} - ${posted}`;
+      drawerPriority.textContent = lead.priority || "None";
+      drawerLastTouch.textContent = lead.lastTouch || "Not contacted";
+      drawerNextStep.textContent = lead.nextStep || "Set next step";
+      drawerChannel.textContent = lead.channel || lead.type || "N/A";
+      drawerDescription.textContent = lead.description || "No description yet.";
+      renderDrawerStepper(lead);
+      leadDrawer.classList.add("open");
+      leadDrawerOverlay.classList.add("active");
+    }
+
+    function closeLeadDrawer() {
+      activeDrawerLeadId = null;
+      if (leadDrawer) leadDrawer.classList.remove("open");
+      if (leadDrawerOverlay) leadDrawerOverlay.classList.remove("active");
+    }
+
+    function bindDrawerEvents() {
+      if (leadDrawerOverlay) {
+        leadDrawerOverlay.addEventListener("click", closeLeadDrawer);
+      }
+      if (drawerClose) {
+        drawerClose.addEventListener("click", closeLeadDrawer);
+      }
+      if (drawerPromote) {
+        drawerPromote.addEventListener("click", () => {
+          if (!activeDrawerLeadId) return;
+          promoteLeadToAcquisition(activeDrawerLeadId);
+          closeLeadDrawer();
+          renderAll();
+        });
+      }
+      window.addEventListener("keydown", event => {
+        if (event.key === "Escape") {
+          closeLeadDrawer();
+        }
+      });
+    }
+
     function handleLeadsEvents() {
       document.getElementById("leads-body").addEventListener("change", event => {
         const target = event.target;
@@ -529,7 +609,7 @@ function renderAcquisition(filterHigh = false) {
         const id = target.dataset.id;
         if (!id) return;
         if (target.dataset.action === "lead-promote") {
-          promoteLeadToAcquisition(id);
+          openLeadDrawer(id);
           return;
         }
         if (target.dataset.action === "lead-reject") {
@@ -674,6 +754,7 @@ function renderAcquisition(filterHigh = false) {
       saveState();
     }
 
+    bindDrawerEvents();
     if (window.feather) { window.feather.replace({ color: "#d43d52", width: 18, height: 18 }); }
     handleLeadsEvents();
     handleAcquisitionEvents();
@@ -684,8 +765,6 @@ function renderAcquisition(filterHigh = false) {
     loadState();
     renderAll();
     syncSupabaseLeads();
-
-
 
 
 
