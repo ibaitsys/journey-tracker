@@ -124,6 +124,15 @@
     .section {
       display: block;
       margin-bottom: 18px;
+      background: linear-gradient(180deg, #ffffff 0%, #f9fafb 100%);
+      border: 1px solid var(--border);
+      border-left: 4px solid var(--accent);
+      border-radius: var(--radius-lg);
+      padding: 14px 14px 16px;
+      box-shadow: 0 8px 22px rgba(17, 24, 39, 0.08);
+    }
+    .section + .section {
+      margin-top: 12px;
     }
 
     .section-header {
@@ -131,9 +140,10 @@
       justify-content: space-between;
       align-items: center;
       gap: 10px;
-      margin: 14px 0 8px;
+      margin: 0 0 12px;
+      padding-bottom: 8px;
+      border-bottom: 1px solid var(--border);
     }
-
     .section-header h2 {
       font-size: 1rem;
       font-weight: 600;
