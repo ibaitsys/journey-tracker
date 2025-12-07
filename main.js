@@ -280,15 +280,6 @@
       };
     }
 
-    function setActiveSection(targetId) {
-      document.querySelectorAll(".nav-btn").forEach(btn => {
-        btn.classList.toggle("active", btn.dataset.target === targetId);
-      });
-      document.querySelectorAll(".section").forEach(section => {
-        section.classList.toggle("active", section.id === targetId);
-      });
-    }
-
     function formatStageTag(record) {
       if (record.stage === "retention") return '<span class="tag tag-green">Client</span>';
       if (record.stage === "acquisition") return '<span class="tag tag-yellow">Acquisition</span>';
@@ -535,12 +526,6 @@ function renderAcquisition(filterHigh = false) {
       return date.toISOString().slice(0, 10);
     }
 
-    function ensureNav() {
-      document.querySelectorAll(".nav-btn").forEach(btn => {
-        btn.addEventListener("click", () => setActiveSection(btn.dataset.target));
-      });
-    }
-
     function handleLeadsEvents() {
       document.getElementById("leads-body").addEventListener("change", event => {
         const target = event.target;
@@ -709,7 +694,6 @@ function renderAcquisition(filterHigh = false) {
       saveState();
     }
 
-    ensureNav();
     if (window.feather) { window.feather.replace({ color: "#d43d52", width: 18, height: 18 }); }
     handleLeadsEvents();
     handleAcquisitionEvents();
