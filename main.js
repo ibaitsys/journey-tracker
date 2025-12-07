@@ -10,9 +10,6 @@
     const leadModalClose = document.getElementById("lead-modal-close");
     const leadCancel = document.getElementById("lead-cancel");
     const leadPriority = document.getElementById("lead-priority");
-    const sidebar = document.querySelector(".sidebar");
-    const sidebarOverlay = document.getElementById("sidebar-overlay");
-    const mobileMenuBtn = document.getElementById("mobile-menu-btn");
     const leadStage = document.getElementById("lead-stage");
     const leadModalTitle = document.getElementById("lead-modal-title");
     const leadSubmit = document.getElementById("lead-submit");
@@ -538,42 +535,9 @@ function renderAcquisition(filterHigh = false) {
       return date.toISOString().slice(0, 10);
     }
 
-    function closeSidebarMobile() {
-      if (sidebar) sidebar.classList.remove("is-open");
-      if (sidebarOverlay) sidebarOverlay.classList.remove("active");
-    }
-
-    function toggleSidebarMobile() {
-      if (!sidebar) return;
-      const isOpen = sidebar.classList.contains("is-open");
-      if (isOpen) {
-        closeSidebarMobile();
-      } else {
-        sidebar.classList.add("is-open");
-        if (sidebarOverlay) sidebarOverlay.classList.add("active");
-      }
-    }
-
-    function bindMobileMenu() {
-      if (mobileMenuBtn) {
-        mobileMenuBtn.addEventListener("click", toggleSidebarMobile);
-      }
-      if (sidebarOverlay) {
-        sidebarOverlay.addEventListener("click", closeSidebarMobile);
-      }
-      window.addEventListener("resize", () => {
-        if (window.innerWidth > 900) {
-          closeSidebarMobile();
-        }
-      });
-    }
-
     function ensureNav() {
       document.querySelectorAll(".nav-btn").forEach(btn => {
-        btn.addEventListener("click", () => {
-          setActiveSection(btn.dataset.target);
-          if (window.innerWidth <= 900) closeSidebarMobile();
-        });
+        btn.addEventListener("click", () => setActiveSection(btn.dataset.target));
       });
     }
 
@@ -745,7 +709,6 @@ function renderAcquisition(filterHigh = false) {
       saveState();
     }
 
-    bindMobileMenu();
     ensureNav();
     if (window.feather) { window.feather.replace({ color: "#d43d52", width: 18, height: 18 }); }
     handleLeadsEvents();
