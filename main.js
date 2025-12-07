@@ -334,7 +334,9 @@
     function renderDashboard() {
       const tbody = document.getElementById("dashboard-body");
       tbody.innerHTML = "";
-      const sorted = [...state.records].sort((a, b) => a.stage.localeCompare(b.stage));
+      const sorted = state.records
+        .filter(record => record.stage !== "rejected")
+        .sort((a, b) => a.stage.localeCompare(b.stage));
       sorted.forEach(record => {
         const row = document.createElement("tr");
         row.innerHTML = `
@@ -350,7 +352,6 @@
         tbody.appendChild(row);
       });
     }
-
     function renderLeads() {
       const tbody = document.getElementById("leads-body");
       tbody.innerHTML = "";
