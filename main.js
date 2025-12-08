@@ -70,7 +70,7 @@
       try {
         const { data, error } = await supabaseClient
           .from("leads")
-          .select("id, project, company, contact_info, source_url, description, source, posted_at, priority, last_touch, next_step, history, created_at, journey_data")
+          .select("id, project, company, contact_info, source_url, description, source, posted_at, priority, last_touch, next_step, history, created_at, journey_data, stage")
           .order("posted_at", { ascending: false });
         if (error) {
           console.error("Supabase fetch error", error);
@@ -142,7 +142,8 @@
         last_touch: payload.lastTouch || "",
         next_step: payload.nextStep || "",
         history: payload.history || [],
-        journey_data: payload.journey_data || {} // Include journey_data
+        journey_data: payload.journey_data || {}, // Include journey_data
+        stage: payload.stage || "lead"
       };
       const query = supabaseClient.from("leads");
       // Log the body to debug 400 errors
@@ -603,11 +604,21 @@ function renderAcquisition(filterHigh = false) {
     async function promoteLeadToAcquisition(id) {
       const record = state.records.find(r => idsMatch(r.id, id) && r.stage === "lead");
       if (!record) return;
+      
+      const newJourneyData = { ...(record.journey_data || {}), currentSubstage: "FIRST CONTACT" };
+
       const updated = appendLog(
-        { ...record, stage: "acquisition", substage: "FIRST CONTACT", nextAction: "Book first meeting", lastTouch: "Today" },
+        { 
+            ...record, 
+            stage: "acquisition", 
+            substage: "FIRST CONTACT", 
+            nextAction: "Book first meeting", 
+            lastTouch: "Today",
+            journey_data: newJourneyData
+        },
         "Stage changed lead -> acquisition"
       );
-      if (isSupabaseId(id)) await removeSupabaseLead(id);
+      if (isSupabaseId(id)) await saveLeadToSupabase(updated, id);
       state.records = [updated, ...state.records.filter(r => !idsMatch(r.id, id))];
       renderAll();
     }
@@ -621,22 +632,27 @@ function renderAcquisition(filterHigh = false) {
         { ...record, stage: "rejected", substage: null, nextAction: record.nextStep || record.nextAction || "Rejected" },
         "Stage changed lead -> rejected"
       );
-      if (isSupabaseId(id)) await removeSupabaseLead(id);
+      if (isSupabaseId(id)) await saveLeadToSupabase(updated, id);
       state.records = [updated, ...state.records.filter(r => !idsMatch(r.id, id))];
       renderAll();
     }
 
-    function setSubstage(id, stage) {
+    async function setSubstage(id, stage) {
+      let targetRecord = null;
       state.records = state.records.map(record => {
         if (idsMatch(record.id, id)) {
           if (record.substage === stage) {
             return record;
           }
+          
+          const newJourneyData = { ...(record.journey_data || {}), currentSubstage: stage };
+
           if (stage === "FIRST EPISODE DELIVERED") {
             const nextRecord = {
               ...record,
               stage: "retention",
               substage: "FIRST EPISODE DELIVERED",
+              journey_data: newJourneyData,
               retention: record.retention || {
                 reviews: [],
                 testimony: "",
@@ -647,13 +663,19 @@ function renderAcquisition(filterHigh = false) {
               },
               nextAction: "Kick off retention"
             };
-            return appendLog(nextRecord, `Substage set to ${stage}`);
+            targetRecord = appendLog(nextRecord, `Substage set to ${stage}`);
+            return targetRecord;
           }
-          const nextRecord = { ...record, stage: "acquisition", substage: stage };
-          return appendLog(nextRecord, `Substage set to ${stage}`);
+          const nextRecord = { ...record, stage: "acquisition", substage: stage, journey_data: newJourneyData };
+          targetRecord = appendLog(nextRecord, `Substage set to ${stage}`);
+          return targetRecord;
         }
         return record;
       });
+      
+      if (targetRecord && isSupabaseId(id)) {
+          await saveLeadToSupabase(targetRecord, id);
+      }
     }
 
     function getDefaultRenewalDate() {
