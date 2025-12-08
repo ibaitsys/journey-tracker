@@ -385,9 +385,9 @@
     .lead-drawer {
       position: fixed;
       top: 0;
-      right: -420px;
-      width: 400px;
-      max-width: 90%;
+      right: -440px;
+      width: 420px;
+      max-width: 95%;
       height: 100vh;
       background: #ffffff;
       box-shadow: -4px 0 18px rgba(0, 0, 0, 0.12);
@@ -395,8 +395,8 @@
       z-index: 65;
       display: flex;
       flex-direction: column;
-      padding: 16px;
-      transition: right 0.2s ease;
+      padding: 18px 18px 14px;
+      transition: right 0.22s ease;
       overflow-y: auto;
     }
     .lead-drawer.open {
@@ -407,44 +407,44 @@
       align-items: center;
       justify-content: space-between;
       gap: 12px;
-      margin-bottom: 14px;
+      margin-bottom: 16px;
     }
     .lead-drawer__title {
       font-weight: 700;
-      font-size: 1.05rem;
+      font-size: 1.08rem;
     }
     .lead-drawer__meta {
       color: var(--text-muted);
       font-size: 0.85rem;
     }
     .drawer-section {
-      margin-bottom: 14px;
+      margin-bottom: 16px;
     }
     .drawer-subtitle {
-      margin-bottom: 8px;
+      margin-bottom: 10px;
       font-size: 0.9rem;
-      font-weight: 600;
+      font-weight: 700;
     }
     .drawer-text {
       font-size: 0.85rem;
       color: var(--text-main);
-      line-height: 1.4;
-      background: var(--bg-soft);
+      line-height: 1.5;
+      background: #f8fafc;
       border: 1px solid var(--border);
-      border-radius: 8px;
+      border-radius: 10px;
       padding: 10px;
       min-height: 60px;
     }
     .drawer-kpis {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
       gap: 10px;
     }
     .drawer-kpi {
       border: 1px solid var(--border);
-      border-radius: 10px;
+      border-radius: 12px;
       background: #f9fafb;
-      padding: 8px 10px;
+      padding: 10px 12px;
     }
     .drawer-kpi-label {
       font-size: 0.75rem;
@@ -452,43 +452,86 @@
       margin-bottom: 4px;
     }
     .drawer-kpi-value {
-      font-weight: 600;
-      font-size: 0.92rem;
+      font-weight: 700;
+      font-size: 0.95rem;
+      color: #0f172a;
     }
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      padding: 2px 8px;
+      border-radius: 999px;
+      font-size: 0.72rem;
+      font-weight: 600;
+      border: 1px solid transparent;
+    }
+    .badge-green { background: #ecfdf3; color: #15803d; border-color: #bbf7d0; }
+    .badge-blue { background: #eff6ff; color: #1d4ed8; border-color: #bfdbfe; }
+    .badge-gray { background: #f3f4f6; color: #4b5563; border-color: #e5e7eb; }
     .drawer-stepper {
-      display: grid;
-      gap: 10px;
+      position: relative;
+      padding-left: 18px;
     }
     .drawer-step {
-      display: flex;
-      gap: 10px;
-      align-items: center;
+      position: relative;
+      padding: 8px 0 18px 18px;
+    }
+    .drawer-step::before {
+      content: "";
+      position: absolute;
+      left: 4px;
+      top: 0;
+      bottom: 0;
+      width: 2px;
+      background: #e5e7eb;
+    }
+    .drawer-step:last-child::before {
+      bottom: 14px;
     }
     .drawer-step-circle {
-      width: 14px;
-      height: 14px;
+      position: absolute;
+      left: -4px;
+      top: 6px;
+      width: 28px;
+      height: 28px;
       border-radius: 50%;
-      border: 2px solid var(--border);
+      border: 2px solid #cbd5e1;
       background: #fff;
-    }
-    .drawer-step-title {
-      font-size: 0.85rem;
-      font-weight: 600;
-    }
-    .drawer-step-meta {
-      font-size: 0.8rem;
-      color: var(--text-muted);
+      color: #0f172a;
+      font-weight: 700;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.06);
     }
     .drawer-step-completed .drawer-step-circle {
-      background: var(--text-main);
-      border-color: var(--text-main);
+      background: #0f172a;
+      color: #fff;
+      border-color: #0f172a;
     }
     .drawer-step-active .drawer-step-circle {
       border-color: var(--accent);
+      color: var(--accent);
+    }
+    .drawer-step-title {
+      font-size: 0.92rem;
+      font-weight: 700;
+      color: #0f172a;
+      margin-bottom: 4px;
+    }
+    .drawer-step-meta {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      font-size: 0.8rem;
+      color: var(--text-muted);
+    }
+    .drawer-step-date {
+      color: #6b7280;
     }
     .lead-drawer__footer {
       margin-top: auto;
-      padding-top: 10px;
+      padding-top: 12px;
       border-top: 1px solid var(--border);
       display: flex;
       justify-content: flex-end;

@@ -537,12 +537,19 @@ function renderAcquisition(filterHigh = false) {
         let status = "pending";
         if (idx < safeIndex) status = "completed";
         else if (idx === safeIndex) status = "active";
+        const badgeLabel = status === "completed" ? "Done" : status === "active" ? "Current" : "Pending";
+        const badgeClass = status === "completed" ? "badge-green" : status === "active" ? "badge-blue" : "badge-gray";
+        const metaText = status === "active" ? (record.nextStep || "In progress") : (status === "completed" ? "Completed" : "Upcoming");
+        const circle = status === "completed" ? "&#10003;" : idx + 1;
         return `
           <div class="drawer-step drawer-step-${status}">
-            <div class="drawer-step-circle"></div>
+            <div class="drawer-step-circle">${circle}</div>
             <div>
               <div class="drawer-step-title">${stage}</div>
-              <div class="drawer-step-meta">${idx < safeIndex ? "Completed" : idx === safeIndex ? "Up next" : "Pending"}</div>
+              <div class="drawer-step-meta">
+                <span class="badge ${badgeClass}">${badgeLabel}</span>
+                <span class="drawer-step-date">${metaText}</span>
+              </div>
             </div>
           </div>
         `;
