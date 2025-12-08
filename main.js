@@ -155,10 +155,13 @@
         journey_data: payload.journey_data || {} // Include journey_data
       };
       const query = supabaseClient.from("leads");
+      // Log the body to debug 400 errors
+      console.log("Saving to Supabase:", body);
+      
       const { error } = id ? await query.update(body).eq("id", id) : await query.insert(body);
       if (error) {
         console.error("Supabase save error", error);
-        alert("Could not save to Supabase: " + error.message);
+        alert(`Could not save to Supabase: ${error.message || JSON.stringify(error)}`);
       }
     }
 
