@@ -19,6 +19,16 @@
         </div>
         <div class="view-badge">Internal - PodTechs team only</div>
       </header>
+
+      <!-- Main Navigation Tabs -->
+      <nav class="main-nav">
+        <button class="nav-pill active" data-target="dashboard">Dashboard</button>
+        <button class="nav-pill" data-target="leads">Leads</button>
+        <button class="nav-pill" data-target="acquisition">Acquisition</button>
+        <button class="nav-pill" data-target="retention">Retention</button>
+        <button class="nav-pill" data-target="rejected">Rejected</button>
+      </nav>
+
       <section class="cards-row">
         <article class="card">
           <div class="card-label">Leads (this month)</div>
@@ -174,151 +184,127 @@
     </main>
   </div>
 
-  
-  <div class="drawer-overlay" id="lead-drawer-overlay"></div>
-  <aside class="lead-drawer" id="lead-drawer">
-    <div style="display:flex; justify-content:space-between; align-items:start; margin-bottom: 12px;">
-      <div>
-        <div class="lead-drawer__title" id="drawer-title">Lead</div>
-        <div class="lead-drawer__meta" id="drawer-meta">Source - Posted</div>
-      </div>
-      <button class="btn" id="drawer-close">Close</button>
-    </div>
-
-    <div class="kpi-bar">
-      <div class="kpi-card">
-        <div class="kpi-label">Priority</div>
-        <div class="kpi-value" id="drawer-priority">-</div>
-      </div>
-      <div class="kpi-card">
-        <div class="kpi-label">Last touch</div>
-        <div class="kpi-value" id="drawer-last-touch">-</div>
-      </div>
-      <div class="kpi-card">
-        <div class="kpi-label">Next step</div>
-        <div class="kpi-value" id="drawer-next-step">-</div>
-      </div>
-      <div class="kpi-card">
-        <div class="kpi-label">Channel</div>
-        <div class="kpi-value" id="drawer-channel">-</div>
-      </div>
-    </div>
-
-    <div style="margin-bottom: 24px;">
-      <h4 style="font-size: 14px; font-weight: 600; margin-bottom: 8px; color: #111827;">Description</h4>
-      <p class="drawer-text" id="drawer-description" style="font-size: 13px; line-height: 1.5; color: #4b5563;">No description</p>
-    </div>
-
-    <div class="stepper-box" id="drawer-stepper">
-      <!-- Steps will be injected here -->
-    </div>
-
-    <div style="margin-top: auto; padding-top: 20px; border-top: 1px solid #e5e7eb; display: flex; justify-content: flex-end;">
-      <button class="btn btn-primary" id="drawer-promote">Promote to Acquisition</button>
-    </div>
-  </aside>
-
-  <div class="modal-backdrop" id="description-modal">
-    <div class="modal">
-      <header>
-        <h3>Full Description</h3>
-        <button type="button" class="btn" id="description-close">Close</button>
-      </header>
-      <div class="modal-body" style="max-height: 60vh; overflow:auto; white-space: pre-wrap;" id="description-content"></div>
-      <footer>
-        <button type="button" class="btn" id="description-close-footer">Close</button>
-      </footer>
-    </div>
-  </div>
 <div class="modal-backdrop" id="lead-modal">
     <div class="modal">
       <header>
         <h3 id="lead-modal-title">Add lead</h3>
         <button type="button" class="btn" id="lead-modal-close">Close</button>
       </header>
-      <form id="lead-form">
-        <div class="modal-body">
-          <div class="field">
-            <label for="lead-source">Source</label>
-            <select id="lead-source" required>
-              <option value="">Select source</option>
-              <option value="Twine">Twine</option>
-              <option value="LinkedIn">LinkedIn</option>
-              <option value="Referral">Referral</option>
-              <option value="Other">Other</option>
-            </select>
-          </div>
-          <div class="field">
-            <label for="lead-project">Project / Role</label>
-            <input id="lead-project" type="text" placeholder="Podcast Editor" required />
-          </div>
-          <div class="field">
-            <label for="lead-company">Company</label>
-            <input id="lead-company" type="text" placeholder="Agency or brand" />
-          </div>
-          <div class="field">
-            <label for="lead-email">Contact email</label>
-            <input id="lead-email" type="email" placeholder="name@example.com" required />
-          </div>
-          <div class="field">
-            <label for="lead-phone">Contact phone</label>
-            <input id="lead-phone" type="text" placeholder="+1 (555) 000-0000" />
-          </div>
-          <div class="field">
-            <label for="lead-source-url">Source URL</label>
-            <input id="lead-source-url" type="url" placeholder="https://..." />
-          </div>
-          <div class="field">
-            <label for="lead-service">Service interest</label>
-            <input id="lead-service" type="text" placeholder="Full production" />
-          </div>
-          <div class="field" style="grid-column: 1 / -1;">
-            <label for="lead-description">Description</label>
-            <textarea id="lead-description" placeholder="Short description or notes"></textarea>
-          </div>
-          <div class="field">
-            <label for="lead-priority">Priority</label>
-            <select id="lead-priority">
-              <option value="High">High</option>
-              <option value="Medium" selected>Medium</option>
-              <option value="Low">Low</option>
-            </select>
-          </div>
-          <div class="field">
-            <label for="lead-stage">Stage</label>
-            <select id="lead-stage">
-              <option value="lead">Lead</option>
-              <option value="acquisition">Acquisition</option>
-              <option value="retention">Retention</option>
-              <option value="rejected">Rejected</option>
-            </select>
-          </div>
-          <div class="field">
-            <label for="lead-last-touch">Last touch</label>
-            <input id="lead-last-touch" type="text" placeholder="Not contacted" />
-          </div>
-          <div class="field">
-            <label for="lead-next-step">Next step</label>
-            <textarea id="lead-next-step" placeholder="Draft outreach"></textarea>
-          </div>
+      
+      <!-- KPI Bar -->
+      <div class="kpi-bar" style="padding: 14px 16px; margin-bottom: 0; border-bottom: 1px solid var(--border);">
+        <div class="kpi-card">
+          <div class="kpi-label">Priority</div>
+          <div class="kpi-value" id="modal-kpi-priority">-</div>
         </div>
-        <div class="modal-body">
-          <div class="field" style="grid-column: 1 / -1;">
-             <label>Journey Tracker</label>
-             <div class="stepper-box" id="modal-stepper"></div>
-          </div>
-          <div class="field" style="grid-column: 1 / -1;">
-            <label>History</label>
-            <div id="lead-history" class="section-note" style="max-height: 140px; overflow:auto; border:1px solid var(--border); border-radius:8px; padding:8px; background: var(--bg-soft);"></div>
-            <button type="button" class="btn" id="lead-history-add">Add +</button>
-          </div>
+        <div class="kpi-card">
+          <div class="kpi-label">Last touch</div>
+          <div class="kpi-value" id="modal-kpi-last-touch">-</div>
         </div>
-        <footer>
-          <button type="button" class="btn" id="lead-cancel">Cancel</button>
-          <button type="submit" class="btn btn-primary" id="lead-submit">Save lead</button>
-        </footer>
-      </form>
-    </div>
+        <div class="kpi-card">
+          <div class="kpi-label">Next step</div>
+          <div class="kpi-value" id="modal-kpi-next-step">-</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-label">Channel</div>
+          <div class="kpi-value" id="modal-kpi-channel">-</div>
+        </div>
+      </div>
+
+      <!-- Scrollable Content Area -->
+      <div>
+        <form id="lead-form" style="padding: 16px;">
+          
+          <!-- Details Fields -->
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; margin-bottom: 24px;">
+            <div class="field">
+              <label for="lead-source">Source</label>
+              <select id="lead-source" required>
+                <option value="">Select source</option>
+                <option value="Twine">Twine</option>
+                <option value="LinkedIn">LinkedIn</option>
+                <option value="Referral">Referral</option>
+                <option value="Other">Other</option>
+              </select>
+            </div>
+            <div class="field">
+              <label for="lead-project">Project / Role</label>
+              <input id="lead-project" type="text" placeholder="Podcast Editor" required />
+            </div>
+            <div class="field">
+              <label for="lead-company">Company</label>
+              <input id="lead-company" type="text" placeholder="Agency or brand" />
+            </div>
+            <div class="field">
+              <label for="lead-email">Contact email</label>
+              <input id="lead-email" type="email" placeholder="name@example.com" />
+            </div>
+            <div class="field">
+              <label for="lead-phone">Contact phone</label>
+              <input id="lead-phone" type="text" placeholder="+1 (555) 000-0000" />
+            </div>
+            <div class="field">
+              <label for="lead-source-url">Source URL</label>
+              <input id="lead-source-url" type="url" placeholder="https://..." />
+            </div>
+            <div class="field">
+              <label for="lead-service">Service interest</label>
+              <input id="lead-service" type="text" placeholder="Full production" />
+            </div>
+            <div class="field" style="grid-column: 1 / -1;">
+              <label for="lead-description">Description</label>
+              <textarea id="lead-description" placeholder="Short description or notes"></textarea>
+            </div>
+            <div class="field">
+              <label for="lead-priority">Priority</label>
+              <select id="lead-priority">
+                <option value="High">High</option>
+                <option value="Medium" selected>Medium</option>
+                <option value="Low">Low</option>
+              </select>
+            </div>
+            <div class="field">
+              <label for="lead-stage">Stage</label>
+              <select id="lead-stage">
+                <option value="lead">Lead</option>
+                <option value="acquisition">Acquisition</option>
+                <option value="retention">Retention</option>
+                <option value="rejected">Rejected</option>
+              </select>
+            </div>
+            <div class="field">
+              <label for="lead-last-touch">Last touch</label>
+              <input id="lead-last-touch" type="text" placeholder="Not contacted" />
+            </div>
+            <div class="field">
+              <label for="lead-next-step">Next step</label>
+              <textarea id="lead-next-step" placeholder="Draft outreach"></textarea>
+            </div>
+          </div>
+
+          <!-- Journey Tracker -->
+          <div style="margin-bottom: 24px;">
+            <div class="field" style="grid-column: 1 / -1;">
+               <label style="font-size: 14px; font-weight: 600; margin-bottom: 8px; display: block; color: #111827;">Journey Tracker</label>
+               <div class="stepper-box" id="modal-stepper"></div>
+            </div>
+          </div>
+
+          <!-- History -->
+          <div>
+            <div class="field" style="grid-column: 1 / -1;">
+              <label style="font-size: 14px; font-weight: 600; margin-bottom: 8px; display: block; color: #111827;">History Log</label>
+              <div id="lead-history" class="section-note" style="max-height: 400px; overflow:auto; border:1px solid var(--border); border-radius:8px; padding:8px; background: var(--bg-soft);"></div>
+              <button type="button" class="btn" id="lead-history-add" style="margin-top: 8px;">Add Note +</button>
+            </div>
+          </div>
+
+          <footer style="margin-top: auto; padding: 12px 16px; border-top: 1px solid var(--border); display: flex; justify-content: flex-end; gap: 8px;">
+            <button type="button" class="btn" id="lead-cancel">Cancel</button>
+            <button type="submit" class="btn btn-primary" id="lead-submit">Save Lead</button>
+          </footer>
+        </form>
+      </div>
   </div>
 
     <script src="https://cdn.jsdelivr.net/npm/feather-icons@4.29.2/dist/feather.min.js"></script>

@@ -10,18 +10,6 @@
     const leadModalClose = document.getElementById("lead-modal-close");
     const leadCancel = document.getElementById("lead-cancel");
     const leadPriority = document.getElementById("lead-priority");
-    const leadDrawer = document.getElementById("lead-drawer");
-    const leadDrawerOverlay = document.getElementById("lead-drawer-overlay");
-    const drawerTitle = document.getElementById("drawer-title");
-    const drawerMeta = document.getElementById("drawer-meta");
-    const drawerPriority = document.getElementById("drawer-priority");
-    const drawerLastTouch = document.getElementById("drawer-last-touch");
-    const drawerNextStep = document.getElementById("drawer-next-step");
-    const drawerChannel = document.getElementById("drawer-channel");
-    const drawerDescription = document.getElementById("drawer-description");
-    const drawerStepper = document.getElementById("drawer-stepper");
-    const drawerClose = document.getElementById("drawer-close");
-    const drawerPromote = document.getElementById("drawer-promote");
     const leadStage = document.getElementById("lead-stage");
     const leadModalTitle = document.getElementById("lead-modal-title");
     const leadSubmit = document.getElementById("lead-submit");
@@ -99,6 +87,8 @@
       const priority = (row.priority || "medium").toLowerCase();
       const prettyPriority = priority.charAt(0).toUpperCase() + priority.slice(1);
       const contactInfo = row.contact_info || "";
+      // Prevent "N/A" from breaking the email input type="email"
+      const cleanContactEmail = (contactInfo === "N/A") ? "" : contactInfo;
       const sourceUrl = row.source_url || row.contact_info || "";
       const project = row.project || row.company || "Untitled lead";
       const company = row.company || "";
@@ -114,7 +104,7 @@
         company,
         postedAt: row.posted_at || "N/A",
         contact: contactInfo || "N/A",
-        contactEmail: contactInfo,
+        contactEmail: cleanContactEmail,
         contactPhone: "",
         sourceUrl,
         description: row.description || "",
@@ -261,60 +251,83 @@
       }
     }
 
-    function openLeadModal(record) {
-      leadForm.reset();
-      leadPriority.value = "Medium";
-      leadStage.value = "lead";
-      editingLeadId = record ? record.id : null;
-      draftHistory = record && record.history ? [...record.history] : [];
-      const titleStage = record && record.stage ? record.stage : "lead";
-      const prettyStage = titleStage.charAt(0).toUpperCase() + titleStage.slice(1);
-      leadModalTitle.textContent = record ? `View / Edit ${prettyStage}` : "Add lead";
-      leadSubmit.textContent = record ? "Save changes" : "Save lead";
-      if (record) {
-        document.getElementById("lead-source").value = record.type || "";
-        document.getElementById("lead-project").value = record.project || record.name || "";
-        document.getElementById("lead-company").value = record.company || "";
-        document.getElementById("lead-email").value = record.contactEmail || "";
-        document.getElementById("lead-phone").value = record.contactPhone || "";
-        document.getElementById("lead-source-url").value = record.sourceUrl || "";
-        document.getElementById("lead-description").value = record.description || "";
-        document.getElementById("lead-service").value = record.serviceInterest || "";
-        document.getElementById("lead-last-touch").value = record.lastTouch || "Not contacted";
-        document.getElementById("lead-next-step").value = record.nextStep || "Draft outreach";
-        leadPriority.value = record.priority || "Medium";
-        leadStage.value = record.stage || "lead";
-      }
-      renderHistory({ history: draftHistory });
-      
-      const modalStepper = document.getElementById("modal-stepper");
-      if (record) {
-         // Show stepper only if editing an existing record
-         if (modalStepper) {
-            modalStepper.style.display = 'block';
-            renderGenericStepper(record, modalStepper, 'modal');
-         }
-      } else {
-         // Hide stepper when adding a new lead
-         if (modalStepper) modalStepper.style.display = 'none';
-      }
-
-      leadModal.classList.add("active"); // Activates the backdrop
-      leadModal.querySelector(".modal").classList.add("open"); // Slides in the modal
-    }
-
-    function closeLeadModal() {
-      leadModal.querySelector(".modal").classList.remove("open"); // Slides out the modal
-      editingLeadId = null;
-      draftHistory = [];
-      renderHistory({ history: [] });
-
-      // After animation, remove backdrop
-      setTimeout(() => {
-        leadModal.classList.remove("active");
-      }, 250); // Match CSS transition duration
-    }
-
+        function openLeadModal(record) {
+          leadForm.reset();
+          leadPriority.value = "Medium";
+          leadStage.value = "lead";
+          editingLeadId = record ? record.id : null;
+          draftHistory = record && record.history ? [...record.history] : [];
+          const titleStage = record && record.stage ? record.stage : "lead";
+          const prettyStage = titleStage.charAt(0).toUpperCase() + titleStage.slice(1);
+          leadModalTitle.textContent = record ? `View / Edit ${prettyStage}` : "Add lead";
+          leadSubmit.textContent = record ? "Save changes" : "Save lead";
+          if (record) {
+            document.getElementById("lead-source").value = record.type || "";
+            document.getElementById("lead-project").value = record.project || record.name || "";
+            document.getElementById("lead-company").value = record.company || "";
+            document.getElementById("lead-email").value = record.contactEmail || "";
+            document.getElementById("lead-phone").value = record.contactPhone || "";
+            document.getElementById("lead-source-url").value = record.sourceUrl || "";
+            document.getElementById("lead-description").value = record.description || "";
+            document.getElementById("lead-service").value = record.serviceInterest || "";
+            document.getElementById("lead-last-touch").value = record.lastTouch || "Not contacted";
+            document.getElementById("lead-next-step").value = record.nextStep || "Draft outreach";
+            leadPriority.value = record.priority || "Medium";
+            leadStage.value = record.stage || "lead";
+    
+            // Populate new KPI fields
+            const modalKpiPriority = document.getElementById("modal-kpi-priority");
+            const modalKpiLastTouch = document.getElementById("modal-kpi-last-touch");
+            const modalKpiNextStep = document.getElementById("modal-kpi-next-step");
+            const modalKpiChannel = document.getElementById("modal-kpi-channel");
+    
+            if (modalKpiPriority) modalKpiPriority.textContent = record.priority || "-";
+            if (modalKpiLastTouch) modalKpiLastTouch.textContent = record.lastTouch || "-";
+            if (modalKpiNextStep) modalKpiNextStep.textContent = record.nextStep || "-";
+            if (modalKpiChannel) modalKpiChannel.textContent = record.channel || record.type || "-";
+          } else {
+             // Reset KPIs for new lead
+            const modalKpiPriority = document.getElementById("modal-kpi-priority");
+            const modalKpiLastTouch = document.getElementById("modal-kpi-last-touch");
+            const modalKpiNextStep = document.getElementById("modal-kpi-next-step");
+            const modalKpiChannel = document.getElementById("modal-kpi-channel");
+    
+            if (modalKpiPriority) modalKpiPriority.textContent = "-";
+            if (modalKpiLastTouch) modalKpiLastTouch.textContent = "-";
+            if (modalKpiNextStep) modalKpiNextStep.textContent = "-";
+            if (modalKpiChannel) modalKpiChannel.textContent = "-";
+          }
+          renderHistory({ history: draftHistory });
+          
+          const modalStepper = document.getElementById("modal-stepper");
+          if (record) {
+             // Show stepper only if editing an existing record
+             if (modalStepper) {
+                modalStepper.style.display = 'block';
+                renderGenericStepper(record, modalStepper, 'modal');
+             }
+          } else {
+             // Hide stepper when adding a new lead
+             if (modalStepper) modalStepper.style.display = 'none';
+          }
+    
+                      leadModal.classList.add("active"); // Activates the backdrop
+                      leadModal.querySelector(".modal").classList.add("open"); // Slides in the modal
+                    }
+                
+                    function closeLeadModal() {
+                      const modal = leadModal.querySelector(".modal");
+                      if (modal) modal.classList.remove("open"); // Slides out the modal
+                      
+                      editingLeadId = null;
+                      draftHistory = [];
+                      renderHistory({ history: [] });
+                
+                      // After animation, remove backdrop
+                      setTimeout(() => {
+                        leadModal.classList.remove("active");
+                      }, 250); // Match CSS transition duration
+                    }
     function buildLeadFromForm(existing) {
       const source = document.getElementById("lead-source").value || "";
       const project = document.getElementById("lead-project").value || "";
@@ -445,7 +458,6 @@
           <td>${sourceUrlCell}</td>
           <td>
             <div class="section-actions">
-              <button class="btn btn-primary" data-action="lead-promote" data-id="${lead.id}">Promote</button>
               <button class="btn" data-action="lead-reject" data-id="${lead.id}">Reject</button>
               <button class="btn view-edit" data-action="view-lead" data-id="${lead.id}">View / Edit</button>
             </div>
@@ -787,51 +799,6 @@ function renderAcquisition(filterHigh = false) {
                    }
                 }
               }
-    function openLeadDrawer(id) {
-      if (!leadDrawer || !leadDrawerOverlay) return;
-      const lead = state.records.find(r => idsMatch(r.id, id));
-      if (!lead) return;
-      activeDrawerLeadId = id;
-      drawerTitle.textContent = lead.project || lead.name || "Lead";
-      const posted = formatRelativeTime(lead.postedAt);
-      drawerMeta.textContent = `${lead.type || "Source"} - ${posted}`;
-      drawerPriority.textContent = lead.priority || "None";
-      drawerLastTouch.textContent = lead.lastTouch || "Not contacted";
-      drawerNextStep.textContent = lead.nextStep || "Set next step";
-      drawerChannel.textContent = lead.channel || lead.type || "N/A";
-      drawerDescription.textContent = lead.description || "No description yet.";
-      renderDrawerStepper(lead);
-      leadDrawer.classList.add("open");
-      leadDrawerOverlay.classList.add("active");
-    }
-
-    function closeLeadDrawer() {
-      activeDrawerLeadId = null;
-      if (leadDrawer) leadDrawer.classList.remove("open");
-      if (leadDrawerOverlay) leadDrawerOverlay.classList.remove("active");
-    }
-
-    function bindDrawerEvents() {
-      if (leadDrawerOverlay) {
-        leadDrawerOverlay.addEventListener("click", closeLeadDrawer);
-      }
-      if (drawerClose) {
-        drawerClose.addEventListener("click", closeLeadDrawer);
-      }
-      if (drawerPromote) {
-        drawerPromote.addEventListener("click", () => {
-          if (!activeDrawerLeadId) return;
-          promoteLeadToAcquisition(activeDrawerLeadId);
-          closeLeadDrawer();
-          renderAll();
-        });
-      }
-      window.addEventListener("keydown", event => {
-        if (event.key === "Escape") {
-          closeLeadDrawer();
-        }
-      });
-    }
 
     function handleLeadsEvents() {
       document.getElementById("leads-body").addEventListener("change", event => {
@@ -845,10 +812,6 @@ function renderAcquisition(filterHigh = false) {
         const target = event.target;
         const id = target.dataset.id;
         if (!id) return;
-        if (target.dataset.action === "lead-promote") {
-          openLeadDrawer(id);
-          return;
-        }
         if (target.dataset.action === "lead-reject") {
           moveLeadToRejected(id);
           renderAll();
@@ -990,9 +953,35 @@ function renderAcquisition(filterHigh = false) {
       renderRejected();
       saveState();
     }
+    
+    // Main Navigation Logic
+    function handleMainNavigation() {
+        const navPills = document.querySelectorAll('.nav-pill');
+        const sections = document.querySelectorAll('.section');
 
-    bindDrawerEvents();
+        navPills.forEach(pill => {
+            pill.addEventListener('click', () => {
+                // Remove active class from all pills
+                navPills.forEach(p => p.classList.remove('active'));
+                // Add active class to clicked pill
+                pill.classList.add('active');
+
+                // Hide all sections
+                sections.forEach(s => s.classList.remove('active'));
+
+                // Show target section
+                const targetId = pill.dataset.target;
+                const targetSection = document.getElementById(targetId);
+                if (targetSection) {
+                    targetSection.classList.add('active');
+                }
+            });
+        });
+    }
+
+    // Initialize app
     if (window.feather) { window.feather.replace({ color: "#d43d52", width: 18, height: 18 }); }
+    handleMainNavigation(); // Initialize page navigation
     handleLeadsEvents();
     handleAcquisitionEvents();
     handleClientActions();

@@ -82,6 +82,39 @@
       margin-top: 2px;
     }
 
+    /* Main Navigation Pills */
+    .main-nav {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 24px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid var(--border);
+      overflow-x: auto; /* Allow scroll on small screens */
+    }
+
+    .nav-pill {
+      padding: 8px 16px;
+      border-radius: 999px;
+      border: 1px solid transparent;
+      background: transparent;
+      font-size: 0.9rem;
+      font-weight: 600;
+      color: var(--text-muted);
+      cursor: pointer;
+      transition: all 0.2s ease;
+      white-space: nowrap;
+    }
+
+    .nav-pill:hover {
+      background: var(--bg-soft);
+      color: var(--text-main);
+    }
+
+    .nav-pill.active {
+      background: #111827;
+      color: #ffffff;
+    }
+
     .view-badge {
       font-size: 0.75rem;
       color: var(--text-muted);
@@ -122,7 +155,7 @@
     }
     /* Tables / sections */
     .section {
-      display: block;
+      display: none; /* Hidden by default */
       margin-bottom: 18px;
       background: linear-gradient(180deg, #ffffff 0%, #f9fafb 100%);
       border: 1px solid var(--border);
@@ -130,7 +163,13 @@
       border-radius: var(--radius-lg);
       padding: 14px 14px 16px;
       box-shadow: 0 8px 22px rgba(17, 24, 39, 0.08);
+      animation: fadeIn 0.3s ease-out;
     }
+    
+    .section.active {
+      display: block; /* Show when active */
+    }
+
     .section + .section {
       margin-top: 12px;
     }
@@ -309,19 +348,18 @@
     .modal {
       position: fixed;
       top: 0;
-      right: -750px; /* Hidden off-screen, adjust width as needed */
-      width: 720px; /* Fixed width for the drawer */
-      max-width: 95%; /* Responsive width */
+      right: -750px;
+      width: 720px;
+      max-width: 95%;
       height: 100vh;
       background: var(--bg-main);
-      box-shadow: -4px 0 18px rgba(0, 0, 0, 0.12); /* Shadow on the left */
+      box-shadow: -4px 0 18px rgba(0, 0, 0, 0.12);
       border-left: 1px solid var(--border);
-      z-index: 55; /* Higher than backdrop, lower than main drawer */
-      display: flex;
-      flex-direction: column; /* Stack header, body, footer vertically */
-      overflow-y: auto; /* Enable scrolling for content */
-      transition: right 0.22s ease-out; /* Smooth sliding animation */
-      border-radius: 0; /* No border-radius for full-height drawer */
+      z-index: 55;
+      display: block; /* Changed from flex to block to allow normal flow */
+      overflow-y: auto; /* Enable scrolling on the modal container itself */
+      transition: right 0.22s ease-out;
+      border-radius: 0;
     }
 
     .modal.open {
