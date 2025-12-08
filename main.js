@@ -132,15 +132,15 @@
         return;
       }
       const body = {
-        project: payload.project || payload.name,
-        company: payload.company || null,
-        contact_info: payload.contactEmail || payload.contact || null,
-        source_url: payload.sourceUrl || null,
-        description: payload.description || null,
-        source: payload.type || null,
+        project: payload.project || payload.name || "Untitled",
+        company: payload.company || "N/A", // Force non-empty string
+        contact_info: payload.contactEmail || payload.contact || "",
+        source_url: payload.sourceUrl || "",
+        description: payload.description || "",
+        source: payload.type || "Other",
         priority: (payload.priority || "Medium").toLowerCase(),
-        last_touch: payload.lastTouch || null,
-        next_step: payload.nextStep || null,
+        last_touch: payload.lastTouch || "",
+        next_step: payload.nextStep || "",
         history: payload.history || [],
         journey_data: payload.journey_data || {} // Include journey_data
       };
@@ -156,7 +156,38 @@
     }
 
     async function syncSupabaseLeads() {
-      const leads = await fetchSupabaseLeads();
+      let leads = await fetchSupabaseLeads();
+      
+      // Auto-reject leads older than 7 days
+      const now = new Date();
+      const updates = [];
+      
+      leads = leads.map(lead => {
+          if (lead.stage === 'lead' && lead.postedAt && lead.postedAt !== "N/A") {
+              const posted = new Date(lead.postedAt);
+              // Check if valid date
+              if (!isNaN(posted.getTime())) {
+                  const daysOld = diffInDays(posted, now);
+                  if (daysOld > 7) {
+                      console.log(`Auto-rejecting lead ${lead.id} (${daysOld.toFixed(1)} days old)`);
+                      lead.stage = 'rejected';
+                      lead.history.push({
+                          at: new Date().toLocaleString(),
+                          message: `Auto-rejected: Lead is ${Math.floor(daysOld)} days old (limit: 7)`
+                      });
+                      // Trigger update to Supabase
+                      updates.push(saveLeadToSupabase(lead, lead.id));
+                  }
+              }
+          }
+          return lead;
+      });
+      
+      if (updates.length > 0) {
+          // Wait for all updates to complete to ensure consistency
+          await Promise.all(updates);
+      }
+
       const byId = new Map(state.records.map(r => [String(r.id), r]));
       const merged = [];
       for (const lead of leads) {
@@ -175,6 +206,10 @@
       state.records = merged;
       saveState();
       renderAll();
+      
+      // Hide loader
+      const loader = document.getElementById("app-loader");
+      if (loader) loader.classList.add("hidden");
     }
 
     function saveState() {
@@ -428,6 +463,11 @@
         .sort((a, b) => a.stage.localeCompare(b.stage));
       sorted.forEach(record => {
         const row = document.createElement("tr");
+        row.style.cursor = "pointer";
+        row.onclick = (e) => {
+             if (e.target.tagName === 'BUTTON' || e.target.closest('button') || e.target.tagName === 'A') return;
+             openLeadModal(record);
+        };
         row.innerHTML = `
           <td>${record.name}</td>
           <td>${formatStageTag(record)}</td>
@@ -447,6 +487,11 @@
       const leads = state.records.filter(r => r.stage === "lead");
       leads.forEach(lead => {
         const row = document.createElement("tr");
+        row.style.cursor = "pointer";
+        row.onclick = (e) => {
+             if (e.target.tagName === 'BUTTON' || e.target.closest('button') || e.target.tagName === 'A') return;
+             openLeadModal(lead);
+        };
         const sourceUrlCell = lead.sourceUrl ? `<a href="${lead.sourceUrl}" target="_blank" rel="noopener">Open</a>` : "N/A";
         const projectName = lead.project || lead.name || "N/A";
         const companyName = lead.company || "N/A";
@@ -474,6 +519,11 @@ function renderAcquisition(filterHigh = false) {
 
       prospects.forEach(prospect => {
         const row = document.createElement("tr");
+        row.style.cursor = "pointer";
+        row.onclick = (e) => {
+             if (e.target.tagName === 'BUTTON' || e.target.closest('button') || e.target.tagName === 'INPUT' || e.target.tagName === 'A') return;
+             openLeadModal(prospect);
+        };
         row.innerHTML = `
           <td>${prospect.name}</td>
           <td>
@@ -504,6 +554,11 @@ function renderAcquisition(filterHigh = false) {
       const retention = state.records.filter(r => r.stage === "retention");
       retention.forEach(client => {
         const row = document.createElement("tr");
+        row.style.cursor = "pointer";
+        row.onclick = (e) => {
+             if (e.target.tagName === 'BUTTON' || e.target.closest('button') || e.target.tagName === 'A') return;
+             openLeadModal(client);
+        };
         const healthClass = client.health === "Healthy" ? "tag-green" : client.health === "Watch" ? "tag-yellow" : "tag-red";
         row.innerHTML = `
           <td>${client.name}</td>
@@ -735,13 +790,26 @@ function renderAcquisition(filterHigh = false) {
               // Persist changes to Supabase
               saveLeadToSupabase(lead, lead.id);
         
-              // Update local state and re-render
-              state.records = state.records.map(r => idsMatch(r.id, leadId) ? lead : r);
-              saveState();
-              renderAll();
-              openLeadDrawer(leadId); // Re-open drawer to show updated state
-            }    
-        function toggleDetails(uniqueId) {
+                    // Update local state and re-render
+                    state.records = state.records.map(r => idsMatch(r.id, leadId) ? lead : r);
+                    saveState();
+                    renderAll();
+                    
+                    // Re-render specific components in the open modal without resetting the view
+                    const modalStepper = document.getElementById("modal-stepper");
+                    if (modalStepper) {
+                       renderGenericStepper(lead, modalStepper, 'modal');
+                    }
+                    
+                    // Update KPI fields
+                    const modalKpiNextStep = document.getElementById("modal-kpi-next-step");
+                    if (modalKpiNextStep) modalKpiNextStep.textContent = lead.nextStep || "-"; // Or next journey step?
+                    // Actually, the 'Next step' field in KPI usually refers to the 'next_step' text field, 
+                    // but if we want it to reflect the Journey stage, we might need to update that.
+                    // For now, let's just stick to what openLeadModal does.
+                    
+                    // If the user was on the Journey tab, they stay there.
+                  }        function toggleDetails(uniqueId) {
           const el = document.getElementById(`details-${uniqueId}`);
           if (el) {
             el.style.display = el.style.display === "block" ? "none" : "block";
@@ -988,7 +1056,11 @@ function renderAcquisition(filterHigh = false) {
     handleRejectedEvents();
     handleHistoryQuickAdd();
     checkMigration();
-    loadState();
+    
+    // Clear local storage state on every page load to ensure data is always fresh from Supabase
+    localStorage.removeItem(STORAGE_KEY); 
+
+    loadState(); // This will now effectively load an empty state if local storage was cleared
     renderAll();
     syncSupabaseLeads();
 
