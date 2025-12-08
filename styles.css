@@ -540,31 +540,36 @@
     /* Uiverse-style stepper visuals */
     .drawer-stepper {
       position: relative;
-      padding-top: 4px;
+      padding: 10px 12px 6px 12px;
+      background: #ffffff;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
     }
     .drawer-step {
       display: flex;
       position: relative;
-      padding: 0 0 28px 56px;
-      margin-bottom: 0;
+      padding: 0 0 32px 60px;
+      margin: 0;
     }
     .drawer-step:last-child {
       padding-bottom: 0;
     }
     .drawer-step-line {
       position: absolute;
-      left: 27px;
+      left: 30px;
       top: 40px;
-      bottom: -28px;
+      bottom: -32px;
       width: 2px;
       background-color: #e2e8f0;
+      z-index: 1;
     }
     .drawer-step:last-child .drawer-step-line {
       display: none;
     }
     .drawer-step-circle {
       position: absolute;
-      left: 7px;
+      left: 10px;
       top: 0;
       width: 40px;
       height: 40px;
@@ -573,6 +578,7 @@
       align-items: center;
       justify-content: center;
       font-weight: 700;
+      font-size: 0.95rem;
       background: #fff;
       border: 2px solid #e2e8f0;
       color: #94a3b8;
@@ -603,15 +609,15 @@
       margin-bottom: 4px;
     }
     .stepper-completed .drawer-step-status {
-      background: #dcfce7;
+      background-color: #dcfce7;
       color: #166534;
     }
     .stepper-active .drawer-step-status {
-      background: #dbeafe;
+      background-color: #dbeafe;
       color: #1d4ed8;
     }
     .stepper-pending .drawer-step-status {
-      background: #f1f5f9;
+      background-color: #f1f5f9;
       color: #64748b;
     }
     .drawer-step-date {
