@@ -294,24 +294,40 @@
       inset: 0;
       background: rgba(17, 24, 39, 0.35);
       display: none;
-      align-items: center;
-      justify-content: center;
-      padding: 16px;
-      z-index: 50;
+      /* Remove align-items and justify-content from here */
+      padding: 0; /* No padding on backdrop */
+      z-index: 50; /* Needs to be lower than drawer's z-index */
+      overflow: hidden; /* Prevent scroll on background */
+      transition: background 0.2s ease; /* Smooth transition for backdrop */
     }
 
     .modal-backdrop.active {
-      display: flex;
+      display: block; /* Only display when active */
     }
 
+    /* Make the .modal itself a drawer */
     .modal {
+      position: fixed;
+      top: 0;
+      right: -750px; /* Hidden off-screen, adjust width as needed */
+      width: 720px; /* Fixed width for the drawer */
+      max-width: 95%; /* Responsive width */
+      height: 100vh;
       background: var(--bg-main);
-      border-radius: var(--radius-lg);
-      border: 1px solid var(--border);
-      width: min(720px, 100%);
-      box-shadow: 0 15px 45px rgba(0, 0, 0, 0.12);
-      overflow: hidden;
+      box-shadow: -4px 0 18px rgba(0, 0, 0, 0.12); /* Shadow on the left */
+      border-left: 1px solid var(--border);
+      z-index: 55; /* Higher than backdrop, lower than main drawer */
+      display: flex;
+      flex-direction: column; /* Stack header, body, footer vertically */
+      overflow-y: auto; /* Enable scrolling for content */
+      transition: right 0.22s ease-out; /* Smooth sliding animation */
+      border-radius: 0; /* No border-radius for full-height drawer */
     }
+
+    .modal.open {
+      right: 0; /* Slide in */
+    }
+
 
     .modal header {
       padding: 14px 16px;
@@ -659,4 +675,244 @@
 
 
 
-    .btn.view-edit {\n      background: #111827;\n      border-color: #111827;\n      color: #ffffff;\n    }\n\n    .btn.view-edit:hover {\n      background: #4b5563;\n      border-color: #4b5563;\n      color: #ffffff;\n    }\n
+    .btn.view-edit {
+      background: #111827;
+      border-color: #111827;
+      color: #ffffff;
+    }
+
+    .btn.view-edit:hover {
+      background: #4b5563;
+      border-color: #4b5563;
+      color: #ffffff;
+    }
+
+    /* --- NEW DRAWER / PANEL STYLES FROM REFERENCE --- */
+    .lead-drawer {
+      background: #ffffff;
+      padding: 24px;
+      border-left: 1px solid #ddd;
+    }
+
+    .lead-drawer__title { 
+      font-size: 22px; 
+      margin-bottom: 6px; 
+      font-weight: 600;
+      color: #111827;
+    }
+    
+    .lead-drawer__meta { 
+      font-size: 13px; 
+      color: #666; 
+      margin-bottom: 20px; 
+    }
+
+    /* KPI BAR */
+    .kpi-bar {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 16px;
+      margin-bottom: 28px;
+    }
+    
+    .kpi-card {
+      background: #f9fafb;
+      border-radius: 14px;
+      padding: 18px 20px;
+      border: 1px solid #e5e7eb;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+    }
+    
+    .kpi-label {
+      font-size: 13px;
+      color: #6b7280;
+      margin-bottom: 8px;
+      font-weight: 500;
+    }
+    
+    .kpi-value {
+      font-size: 18px;
+      font-weight: 700;
+      color: #111827;
+      line-height: 1.2;
+    }
+
+    /* STEPPER */
+    .stepper-box {
+      margin-top: 10px;
+      background-color: white;
+      border-radius: 12px;
+      padding: 0;
+      width: 100%;
+    }
+
+    .stepper-step {
+      display: flex;
+      margin-bottom: 32px;
+      position: relative;
+      cursor: pointer;
+    }
+
+    .stepper-line {
+      position: absolute;
+      left: 19px;
+      top: 40px;
+      bottom: -32px;
+      width: 2px;
+      background-color: #e2e8f0;
+      z-index: 1;
+    }
+
+    .stepper-step:last-child .stepper-line {
+      display: none;
+    }
+
+    .stepper-circle {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-right: 16px;
+      z-index: 2;
+      font-weight: bold;
+      transition: 0.15s ease-in-out;
+      background: #fff;
+      flex-shrink: 0;
+    }
+
+    .stepper-active .stepper-circle {
+      border: 2px solid #0f172a;
+      color: #0f172a;
+    }
+
+    .stepper-completed .stepper-circle {
+      background-color: #0f172a;
+      color: white;
+      position: relative;
+      animation: pulseCompleted 0.18s ease-out;
+      border: 2px solid #0f172a;
+    }
+
+    .stepper-completed .stepper-circle::after {
+      content: "";
+      position: absolute;
+      width: 54px;
+      height: 54px;
+      border-radius: 50%;
+      background: rgba(15, 23, 42, 0.08);
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      z-index: -1;
+    }
+
+    .check-icon {
+      width: 18px;
+      height: 18px;
+      stroke: white;
+      stroke-width: 2.4;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      fill: none;
+    }
+
+    @keyframes pulseCompleted {
+      from { transform: scale(0.85); opacity: 0.2; }
+      to { transform: scale(1); opacity: 1; }
+    }
+
+    .stepper-pending .stepper-circle {
+      border: 2px solid #e2e8f0;
+      color: #94a3b8;
+    }
+
+    .stepper-content { flex: 1; }
+    .stepper-title { font-weight: 600; margin-bottom: 4px; font-size: 14px; }
+
+    .stepper-status {
+      font-size: 12px;
+      padding: 2px 8px;
+      border-radius: 12px;
+      margin-top: 4px;
+      display: inline-block;
+    }
+    .stepper-completed .stepper-status { background-color: #dcfce7; color: #166534; }
+    .stepper-active .stepper-status { background-color: #dbeafe; color: #1d4ed8; }
+    .stepper-pending .stepper-status { background-color: #f1f5f9; color: #64748b; }
+
+    .stepper-time {
+      font-size: 12px;
+      color: #94a3b8;
+      margin-top: 4px;
+    }
+
+    /* MINIMAL COLLAPSE BOX */
+    .step-details {
+      display: none;
+      background: #ffffff;
+      padding: 18px 20px; /* Increased padding */
+      margin-left: 56px;
+      margin-top: -14px;
+      margin-bottom: 24px; /* Slightly more margin below */
+      border: 1px solid #ececec;
+      border-radius: 10px; /* Slightly more rounded */
+      box-shadow: 0 2px 8px rgba(0,0,0,0.05); /* Slightly more prominent shadow */
+      animation: fadeIn 0.18s ease-out;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(-4px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* General textarea styling for comment box */
+    textarea {
+      width: 100%; /* Make textarea fill available width */
+      border-radius: 8px; /* Slightly more rounded */
+      border: 1px solid #ddd;
+      padding: 8px 10px; /* More padding */
+      font-size: 14px; /* Larger font */
+      min-height: 60px; /* Minimum height */
+      background: #fafafa;
+      resize: vertical;
+      margin-bottom: 12px; /* Space below textarea */
+    }
+    
+    /* Styling for individual comments */
+    .comment-box {
+      padding: 8px 0; /* More vertical padding */
+      border-bottom: 1px solid #f0f0f0; /* Lighter separator */
+      font-size: 14px; /* Larger font */
+      color: #444;
+    }
+    .comment-box:last-child {
+        border-bottom: none; /* No border for the last comment */
+    }
+
+    /* Specific adjustments for elements within step-details for better hierarchy */
+    .step-details > div:first-child { /* "Time in this step" container */
+        font-size: 13px; /* Slightly larger */
+        color: #6b7280;
+        margin-bottom: 12px; /* More space below it */
+    }
+
+    .step-details h4 { /* "Add Comment" and "Comments" titles */
+        font-size: 14px; /* Larger title */
+        margin: 14px 0 8px; /* More vertical space */
+        color: #333;
+    }
+
+    /* Adjust the save comment button's margin */
+    .step-details .btn-secondary {
+        margin-top: 0; /* Remove default margin from global btn style */
+        margin-bottom: 16px; /* Add specific margin below save button */
+    }
+
+    .drawer-text {
+        background: #fafafa;
+        border: 1px solid #ddd;
+    }

@@ -33,6 +33,40 @@
     let editingLeadId = null;
     let activeDrawerLeadId = null;
     let draftHistory = [];
+    
+    // Helper functions from reference lead_control_center_preview.html
+    function diffInDays(start, end) {
+      const ms = end - start;
+      const days = ms / (1000 * 60 * 60 * 24);
+      return Math.round(days * 10) / 10;
+    }
+
+    function humanizeDurationDays(days) {
+      if (days < 1) {
+        const hours = Math.round(days * 24);
+        if (hours <= 0) return "< 1h";
+        return `${hours}h`;
+      }
+      if (days === 1) return "1 day";
+      return `${days} days`;
+    }
+
+    // Tempo específico em um step - will return placeholder until timestamps are integrated
+    function getTimeInStep(lead, stepIndex) {
+      // Assuming lead.timestamps exists for each lead, similar to the reference.
+      // This needs to be integrated into lead object when it's created/loaded.
+      // For now, let's assume `lead.timestamps` is available and has ISO strings.
+      const startIso = lead.timestamps && lead.timestamps[stepIndex];
+      if (!startIso) return "Not started";
+      const start = new Date(startIso);
+
+      // If next step has a timestamp, use it. Otherwise, use current time.
+      const nextTs = lead.timestamps && lead.timestamps[stepIndex + 1];
+      const end = nextTs ? new Date(nextTs) : new Date();
+      const d = diffInDays(start, end);
+      return humanizeDurationDays(d);
+    }
+
 
     function checkMigration() {
       const hasMigrated = window.localStorage.getItem(MIGRATION_KEY);
@@ -48,7 +82,7 @@
       try {
         const { data, error } = await supabaseClient
           .from("leads")
-          .select("id, project, company, contact_info, source_url, description, source, posted_at, priority, last_touch, next_step, history, created_at")
+          .select("id, project, company, contact_info, source_url, description, source, posted_at, priority, last_touch, next_step, history, created_at, journey_data")
           .order("posted_at", { ascending: false });
         if (error) {
           console.error("Supabase fetch error", error);
@@ -68,6 +102,11 @@
       const sourceUrl = row.source_url || row.contact_info || "";
       const project = row.project || row.company || "Untitled lead";
       const company = row.company || "";
+
+      // Initialize journey data from Supabase
+      const journeyData = row.journey_data || {};
+      const substage = journeyData.currentSubstage || "Lead detected"; // Default to first step
+
       return {
         id: row.id,
         name: project,
@@ -80,8 +119,8 @@
         sourceUrl,
         description: row.description || "",
         type: row.source || "Other",
-        stage: "lead",
-        substage: null,
+        stage: row.stage || "lead", // Use existing stage
+        substage: substage, // Set substage from journeyData
         serviceInterest: "",
         priority: prettyPriority,
         lastTouch: row.last_touch || "Not contacted",
@@ -90,6 +129,9 @@
         channel: row.source || "N/A",
         retention: null,
         history: row.history || [],
+        comments: journeyData.comments || {}, // Map to comments
+        timestamps: journeyData.timestamps || {}, // Map to timestamps
+        journey_data: journeyData, // Keep the full journey_data object
         createdAt: row.created_at
       };
     }
@@ -109,7 +151,8 @@
         priority: (payload.priority || "Medium").toLowerCase(),
         last_touch: payload.lastTouch || null,
         next_step: payload.nextStep || null,
-        history: payload.history || []
+        history: payload.history || [],
+        journey_data: payload.journey_data || {} // Include journey_data
       };
       const query = supabaseClient.from("leads");
       const { error } = id ? await query.update(body).eq("id", id) : await query.insert(body);
@@ -240,14 +283,33 @@
         leadStage.value = record.stage || "lead";
       }
       renderHistory({ history: draftHistory });
-      leadModal.classList.add("active");
+      
+      const modalStepper = document.getElementById("modal-stepper");
+      if (record) {
+         // Show stepper only if editing an existing record
+         if (modalStepper) {
+            modalStepper.style.display = 'block';
+            renderGenericStepper(record, modalStepper, 'modal');
+         }
+      } else {
+         // Hide stepper when adding a new lead
+         if (modalStepper) modalStepper.style.display = 'none';
+      }
+
+      leadModal.classList.add("active"); // Activates the backdrop
+      leadModal.querySelector(".modal").classList.add("open"); // Slides in the modal
     }
 
     function closeLeadModal() {
-      leadModal.classList.remove("active");
+      leadModal.querySelector(".modal").classList.remove("open"); // Slides out the modal
       editingLeadId = null;
       draftHistory = [];
       renderHistory({ history: [] });
+
+      // After animation, remove backdrop
+      setTimeout(() => {
+        leadModal.classList.remove("active");
+      }, 250); // Match CSS transition duration
     }
 
     function buildLeadFromForm(existing) {
@@ -280,8 +342,8 @@
         sourceUrl: sourceUrl || base.sourceUrl || "",
         description: description || base.description || "",
         type: source || base.type || "Other",
-        stage,
-        substage: computedSubstage,
+        stage: base.stage || stage, // Preserve existing stage if available
+        substage: base.substage || journeySteps[0], // Use existing substage or default to first step
         serviceInterest,
         priority,
         lastTouch,
@@ -289,7 +351,14 @@
         owner: base.owner || "Unassigned",
         channel: source,
         retention: stage === "retention" ? retentionData : null,
-        history: draftHistory.length ? draftHistory : base.history || []
+        history: draftHistory.length ? draftHistory : base.history || [],
+        comments: base.comments || {}, // Preserve existing comments or initialize
+        timestamps: base.timestamps || {}, // Preserve existing timestamps or initialize
+        journey_data: base.journey_data || { // Preserve existing journey_data or initialize
+          currentSubstage: base.substage || journeySteps[0],
+          timestamps: {},
+          comments: {}
+        }
       };
     }
 
@@ -529,36 +598,192 @@ function renderAcquisition(filterHigh = false) {
       return date.toISOString().slice(0, 10);
     }
 
-    function renderDrawerStepper(record) {
-      if (!drawerStepper) return;
-      const currentIndex = record.substage ? substages.indexOf(record.substage) : 0;
-      const safeIndex = currentIndex >= 0 ? currentIndex : 0;
-      const steps = substages.map((stage, idx) => {
-        let status = "pending";
-        if (idx < safeIndex) status = "completed";
-        else if (idx === safeIndex) status = "active";
-        const statusLabel = status === "completed" ? "Completed" : status === "active" ? "In Progress" : "Pending";
-        const metaText = status === "active"
-          ? (record.nextStep || "Next step pending")
-          : status === "completed"
-            ? (record.lastTouch || "Logged")
-            : "Awaiting";
-        const circle = status === "completed" ? "&#10003;" : idx + 1;
-        return `
-        <div class="drawer-step stepper-${status}">
-          <div class="drawer-step-circle">${circle}</div>
-          <div class="drawer-step-content">
-            <div class="drawer-step-title">${stage}</div>
-            <div class="drawer-step-status">${statusLabel}</div>
-            <div class="drawer-step-date">${metaText}</div>
-          </div>
-          <div class="drawer-step-line"></div>
-        </div>
-        `;
-      }).join("");
-      drawerStepper.innerHTML = steps;
-    }
+    // New list of journey steps
+    const journeySteps = [
+        "Lead detected",
+        "First contact",
+        "Lead replied",
+        "First meeting",
+        "Scheduled first episode",
+        "Episode 1 LIVE (Acquisition)",
+        "Request referral"
+    ];
 
+        function renderGenericStepper(record, container, contextPrefix) {
+          if (!container) return;
+          // Using journeySteps instead of substages
+          const currentIndex = record.substage ? journeySteps.indexOf(record.substage) : 0;
+          const safeIndex = currentIndex >= 0 ? currentIndex : 0;
+          const steps = journeySteps.map((stage, idx) => {
+            let status = "pending";
+            if (idx < safeIndex) status = "completed";
+            else if (idx === safeIndex) status = "active";
+            const statusLabel = status === "completed" ? "Completed" : status === "active" ? "In Progress" : "Pending";
+            const metaText = status === "active"
+              ? (record.nextStep || "Next step pending")
+              : status === "completed"
+                ? (record.lastTouch || "Logged")
+                : "Awaiting";
+            
+            const circleContent = status === "completed" 
+              ? `<svg class="check-icon" viewBox="0 0 24 24"><path d="M5 13l4 4L19 7"></path></svg>` 
+              : idx + 1;
+    
+            const timeInThisStep = getTimeInStep(record, idx + 1); 
+            const comments = record.comments && record.comments[idx + 1] ? record.comments[idx + 1] : [];
+            
+            const uniqueId = `${contextPrefix}-${record.id}-${idx + 1}`;
+            const textareaId = `comment-${uniqueId}`;
+            const detailsId = `details-${uniqueId}`;
+    
+            return `
+            <div class="stepper-step stepper-${status}" onclick="toggleDetails('${uniqueId}');">
+              <div class="stepper-circle">${circleContent}</div>
+              <div class="stepper-line"></div>
+              <div class="stepper-content">
+                <div class="stepper-title">${stage}</div>
+                <div class="stepper-status">${statusLabel}</div>
+                <div class="stepper-time">${metaText}</div>
+              </div>
+            </div>
+            <div id="${detailsId}" class="step-details">
+              <div style="font-size:12px; color:#6b7280; margin-bottom:8px;">
+                Time in this step: <strong>${timeInThisStep}</strong>
+              </div>
+    
+              <h4 style="font-size:13px; margin:6px 0;">Add Comment</h4>
+              <textarea id="${textareaId}" placeholder="Add a comment..."></textarea>
+    
+              <button class="btn btn-secondary"
+                onclick="saveComment('${record.id}', ${idx + 1}, '${textareaId}', '${contextPrefix}'); event.stopPropagation();">
+                Save Comment
+              </button>
+    
+              <h4 style="margin-top:12px; font-size:13px;">Comments</h4>
+              ${
+                comments.length
+                  ? comments.map(c => `
+                    <div class="comment-box">
+                      <strong>${c.date}</strong><br>${c.text}
+                    </div>`
+                    ).join("")
+                  : "<i style='font-size:12px;color:#6b7280;'>No comments yet</i>"
+              }
+              <h4 style="margin-top:16px; font-size:13px;">Actions</h4>
+              <button class="btn btn-primary"
+                onclick="promoteStep('${record.id}', ${idx + 1}); event.stopPropagation();">
+                Promote to Next Step
+              </button>
+            </div>
+            `;
+          }).join("");
+          container.innerHTML = steps;
+        }
+    
+        function renderDrawerStepper(record) {
+          renderGenericStepper(record, drawerStepper, 'drawer');
+        }
+    
+            function promoteStep(leadId, stepIndex) {
+              const lead = state.records.find(l => idsMatch(l.id, leadId));
+              if (!lead) return;
+        
+              const currentStepName = lead.substage;
+              const currentStepIdx = journeySteps.indexOf(currentStepName);
+        
+              // Check if there is a next step
+              if (currentStepIdx === -1 || currentStepIdx >= journeySteps.length - 1) {
+                alert("This is already the last step in the journey.");
+                return;
+              }
+        
+              const nextStepIdx = currentStepIdx + 1;
+              const nextStepName = journeySteps[nextStepIdx];
+              const now = new Date().toISOString();
+        
+              // Update lead's substage
+              lead.substage = nextStepName;
+        
+              // Update timestamps in journey_data (using 1-based index for timestamps object)
+              if (!lead.journey_data.timestamps) lead.journey_data.timestamps = {};
+              if (!lead.journey_data.timestamps[stepIndex + 1]) { // If timestamp for the new step doesn't exist
+                lead.journey_data.timestamps[stepIndex + 1] = now;
+              }
+              // Also, record the time when the previous step was completed (if not already recorded)
+              if (!lead.journey_data.timestamps[currentStepIdx + 1]) {
+                 lead.journey_data.timestamps[currentStepIdx + 1] = now; // If not explicitly set, use current time
+              }
+        
+              // Update currentSubstage in journey_data
+              lead.journey_data.currentSubstage = nextStepName;
+        
+              // Persist changes to Supabase
+              saveLeadToSupabase(lead, lead.id);
+        
+              // Update local state and re-render
+              state.records = state.records.map(r => idsMatch(r.id, leadId) ? lead : r);
+              saveState();
+              renderAll();
+              openLeadDrawer(leadId); // Re-open drawer to show updated state
+            }    
+        function toggleDetails(uniqueId) {
+          const el = document.getElementById(`details-${uniqueId}`);
+          if (el) {
+            el.style.display = el.style.display === "block" ? "none" : "block";
+          }
+        }
+    
+        function saveComment(id, step, textareaId, contextPrefix) {
+          const lead = state.records.find(l => idsMatch(l.id, id));
+          if (!lead) return;
+    
+          const textarea = document.getElementById(textareaId);
+          const text = textarea ? textarea.value.trim() : "";
+    
+          if (!text) return alert("Write something to add a comment!");
+    
+                // Initialize journey_data if it doesn't exist
+                if (!lead.journey_data) {
+                  lead.journey_data = { timestamps: {}, comments: {} };
+                }
+                // Initialize comments within journey_data for the specific step
+                if (!lead.journey_data.comments) {
+                  lead.journey_data.comments = {};
+                }
+                if (!lead.journey_data.comments[step]) {
+                  lead.journey_data.comments[step] = [];
+                }
+          
+                lead.journey_data.comments[step].push({
+                  text,
+                  date: new Date().toLocaleString()
+                });
+          
+                // Clear the textarea after saving
+                if (textarea) {
+                  textarea.value = "";
+                }
+                
+                saveState(); // Save the updated state locally
+                saveLeadToSupabase(lead, lead.id); // Persist changes to Supabase
+          
+                // Refresh both views if they are open/active
+                if (activeDrawerLeadId && idsMatch(activeDrawerLeadId, id)) {
+                   renderDrawerStepper(lead);
+                   // Restore open state of the detail in drawer
+                   setTimeout(() => toggleDetails(`drawer-${id}-${step}`), 50);
+                }
+                
+                // If we are in the modal context or modal is open for this lead
+                if (editingLeadId && idsMatch(editingLeadId, id)) {
+                   const modalStepper = document.getElementById("modal-stepper");
+                   if (modalStepper) {
+                      renderGenericStepper(lead, modalStepper, 'modal');
+                       // Restore open state of the detail in modal
+                      setTimeout(() => toggleDetails(`modal-${id}-${step}`), 50);
+                   }
+                }
+              }
     function openLeadDrawer(id) {
       if (!leadDrawer || !leadDrawerOverlay) return;
       const lead = state.records.find(r => idsMatch(r.id, id));
@@ -774,6 +999,14 @@ function renderAcquisition(filterHigh = false) {
     loadState();
     renderAll();
     syncSupabaseLeads();
+
+    // Close lead modal when clicking outside the modal content
+    leadModal.addEventListener("click", (event) => {
+      if (event.target === leadModal) {
+        closeLeadModal();
+      }
+    });
+
 
 
 
