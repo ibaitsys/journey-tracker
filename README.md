@@ -1,12 +1,12 @@
 # Journey Tracker Automation
 
-This project automates the collection of freelance job leads from **LinkedIn** and **Twine** and centralizes them into a Supabase database. It includes a frontend dashboard to manage these leads through a sales pipeline (Lead -> Acquisition -> Retention).
+This project automates the collection of freelance job leads from **LinkedIn** and **Twine** and centralizes them into a Supabase database. It includes a comprehensive frontend dashboard to manage these leads through a structured sales pipeline and detailed journey tracking.
 
 ## 🚀 System Overview
 
 1.  **Scrapers (Python):** Scripts run automatically to search for "Podcast", "Video Editor", and related jobs.
 2.  **Database (Supabase):** Stores job details, ensuring no duplicates.
-3.  **Frontend (HTML/JS):** Displays the leads, allowing you to track status, priority, and "posted time".
+3.  **Frontend (HTML/JS):** A Single-Page Application (SPA) dashboard to track status, priority, journey steps, and history logs.
 4.  **Automation (GitHub Actions):** Triggers the scrapers every 12 hours.
 
 ---
@@ -56,6 +56,7 @@ The system uses a single table named **`leads`**.
 | `posted_at` | `timestamptz`| **Crucial.** The ISO timestamp of when the job was posted. |
 | `created_at` | `timestamptz`| When the record was added to the DB. |
 | `stage` | `text` | Pipeline stage (default: "lead"). |
+| `journey_data` | `jsonb` | **New:** Stores journey steps, timestamps, and comments. |
 
 Migration note (split project vs company):
 ```sql
@@ -69,12 +70,15 @@ update leads set project = coalesce(project, company);
 
 ## 💻 Frontend Dashboard
 
-*   **`index.html` & `main.js`**: A lightweight, serverless dashboard.
-*   **Features:**
-    *   Fetches leads from Supabase.
-    *   **"Posted" Column:** Converts the `posted_at` timestamp into a human-readable string (e.g., "5 hours ago", "2 days ago").
-    *   **Sorting:** Leads are shown **Newest First** based on the `posted_at` date.
-    *   **Pipeline:** Drag-and-drop style status changes (Lead -> Acquisition -> Retention).
+*   **`index.html` & `main.js`**: A modern, unified dashboard interface.
+*   **Key Features:**
+    *   **Unified Drawer:** A single, comprehensive sliding drawer for viewing and editing leads.
+    *   **Journey Tracker:** Visual stepper to track progress through predefined stages (Lead Detected -> First Contact -> ... -> Request Referral).
+    *   **Auto-Rejection:** Automatically moves leads older than 7 days to the "Rejected" list.
+    *   **History Log:** Tracks all stage changes and manual notes.
+    *   **Navigation:** Top-level tabs for quick switching between Dashboard, Leads, Acquisition, Retention, and Rejected views.
+    *   **Real-time Sync:** Fetches fresh data from Supabase on every page load (bypassing local cache).
+    *   **Full-Page Loader:** Improves perceived performance during data synchronization.
 
 ---
 

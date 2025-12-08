@@ -771,6 +771,13 @@ function renderAcquisition(filterHigh = false) {
               const nextStepName = journeySteps[nextStepIdx];
               const now = new Date().toISOString();
         
+              // Add to History Log
+              if (!lead.history) lead.history = [];
+              lead.history.push({
+                  at: new Date().toLocaleString(),
+                  message: `Journey advanced: ${currentStepName} -> ${nextStepName}`
+              });
+
               // Update lead's substage
               lead.substage = nextStepName;
         
@@ -796,13 +803,15 @@ function renderAcquisition(filterHigh = false) {
                     renderAll();
                     
                     // Re-render specific components in the open modal without resetting the view
-                    const modalStepper = document.getElementById("modal-stepper");
-                    if (modalStepper) {
-                       renderGenericStepper(lead, modalStepper, 'modal');
-                    }
-                    
-                    // Update KPI fields
-                    const modalKpiNextStep = document.getElementById("modal-kpi-next-step");
+                          const modalStepper = document.getElementById("modal-stepper");
+                          if (modalStepper) {
+                             renderGenericStepper(lead, modalStepper, 'modal');
+                          }
+                          
+                          // Re-render history to show the new log
+                          renderHistory(lead);
+                          
+                          // Update KPI fields                    const modalKpiNextStep = document.getElementById("modal-kpi-next-step");
                     if (modalKpiNextStep) modalKpiNextStep.textContent = lead.nextStep || "-"; // Or next journey step?
                     // Actually, the 'Next step' field in KPI usually refers to the 'next_step' text field, 
                     // but if we want it to reflect the Journey stage, we might need to update that.
