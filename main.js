@@ -537,21 +537,23 @@ function renderAcquisition(filterHigh = false) {
         let status = "pending";
         if (idx < safeIndex) status = "completed";
         else if (idx === safeIndex) status = "active";
-        const badgeLabel = status === "completed" ? "Done" : status === "active" ? "Current" : "Pending";
-        const badgeClass = status === "completed" ? "badge-green" : status === "active" ? "badge-blue" : "badge-gray";
-        const metaText = status === "active" ? (record.nextStep || "In progress") : (status === "completed" ? "Completed" : "Upcoming");
+        const statusLabel = status === "completed" ? "Completed" : status === "active" ? "In Progress" : "Pending";
+        const metaText = status === "active"
+          ? (record.nextStep || "Next step pending")
+          : status === "completed"
+            ? (record.lastTouch || "Logged")
+            : "Awaiting";
         const circle = status === "completed" ? "&#10003;" : idx + 1;
         return `
-          <div class="drawer-step drawer-step-${status}">
-            <div class="drawer-step-circle">${circle}</div>
-            <div>
-              <div class="drawer-step-title">${stage}</div>
-              <div class="drawer-step-meta">
-                <span class="badge ${badgeClass}">${badgeLabel}</span>
-                <span class="drawer-step-date">${metaText}</span>
-              </div>
-            </div>
+        <div class="drawer-step stepper-${status}">
+          <div class="drawer-step-circle">${circle}</div>
+          <div class="drawer-step-content">
+            <div class="drawer-step-title">${stage}</div>
+            <div class="drawer-step-status">${statusLabel}</div>
+            <div class="drawer-step-date">${metaText}</div>
           </div>
+          <div class="drawer-step-line"></div>
+        </div>
         `;
       }).join("");
       drawerStepper.innerHTML = steps;

@@ -537,6 +537,88 @@
       justify-content: flex-end;
     }
 
+    /* Uiverse-style stepper visuals */
+    .drawer-stepper {
+      position: relative;
+      padding-top: 4px;
+    }
+    .drawer-step {
+      display: flex;
+      position: relative;
+      padding: 0 0 28px 56px;
+      margin-bottom: 0;
+    }
+    .drawer-step:last-child {
+      padding-bottom: 0;
+    }
+    .drawer-step-line {
+      position: absolute;
+      left: 27px;
+      top: 40px;
+      bottom: -28px;
+      width: 2px;
+      background-color: #e2e8f0;
+    }
+    .drawer-step:last-child .drawer-step-line {
+      display: none;
+    }
+    .drawer-step-circle {
+      position: absolute;
+      left: 7px;
+      top: 0;
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      background: #fff;
+      border: 2px solid #e2e8f0;
+      color: #94a3b8;
+      z-index: 2;
+    }
+    .stepper-completed .drawer-step-circle {
+      background: #0f172a;
+      color: #ffffff;
+      border-color: #0f172a;
+    }
+    .stepper-active .drawer-step-circle {
+      border-color: #0f172a;
+      color: #0f172a;
+    }
+    .drawer-step-content {
+      flex: 1;
+    }
+    .drawer-step-title {
+      font-weight: 700;
+      margin-bottom: 4px;
+      color: #0f172a;
+    }
+    .drawer-step-status {
+      font-size: 13px;
+      display: inline-block;
+      padding: 2px 8px;
+      border-radius: 12px;
+      margin-bottom: 4px;
+    }
+    .stepper-completed .drawer-step-status {
+      background: #dcfce7;
+      color: #166534;
+    }
+    .stepper-active .drawer-step-status {
+      background: #dbeafe;
+      color: #1d4ed8;
+    }
+    .stepper-pending .drawer-step-status {
+      background: #f1f5f9;
+      color: #64748b;
+    }
+    .drawer-step-date {
+      font-size: 12px;
+      color: #94a3b8;
+    }
+
     @media (max-width: 900px) {
       /* hide less important columns on small screens */
       #leads th:nth-child(6), #leads td:nth-child(6),
